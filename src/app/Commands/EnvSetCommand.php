@@ -39,25 +39,24 @@ class EnvSetCommand extends Command
      */
     public function handle()
     {
-        $key = $this->argument('key');
+        $client = new EnvClient();
+        $key = strtoupper($this->argument('key'));
         $value = $this->argument('value');
         $validators = config('env.validators', []);
-        $success = true;
-        $checkerClient = new EnvClient();
         if(count($validators)){
             foreach ($validators as $classname) {
                 $validator = new $classname();
-                $checkerClient
+                $client
                     ->useValidator($validator)
                     ->validate([ $key => $value ]);
             }
         }
-        if($checkerClient->errors()->has($key)){
-            foreach($checkerClient->errors()->get($key) as $err){
+        if($client->errors()->has($key)){
+            foreach($client->errors()->get($key) as $err){
                 $this->error($err);
             }
         } else {
-            (new EnvClient())->update([ $key => $value ]);
+            $client->update([ $key => $value ]);
             $this->info("{$key} successfully set!");
         }
     }

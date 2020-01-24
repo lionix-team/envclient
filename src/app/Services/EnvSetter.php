@@ -20,7 +20,7 @@ class EnvSetter implements EnvSetterInterface
         $envFile = app()->environmentFilePath();
         $envContents = file_get_contents($envFile);
         foreach($this->variables as $key => $value) {
-            if(!$this->processEnvFileContents($key, $value, $envContents)){
+            if(!$this->processEnvFileContents(strtoupper($key), $value, $envContents)){
                 return false;
             };
         }
@@ -37,7 +37,7 @@ class EnvSetter implements EnvSetterInterface
         if(!$valueExisted){
             $envContents .= PHP_EOL . "$key=$value";
         } elseif(strlen($value)){
-            $envContents = str_replace("$key=$sanitizedOldValue", "$key=$value", $envContents);
+            $envContents = preg_replace("/\b$key\b\=$sanitizedOldValue/i", "$key=$value", $envContents);
         } else {
             return false;
         }
