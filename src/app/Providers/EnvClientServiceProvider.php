@@ -1,0 +1,29 @@
+<?php
+
+namespace Lionix\EnvClient\Providers;
+
+use Illuminate\Support\ServiceProvider;
+
+class EnvClientServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->publishes([
+            dirname(__DIR__, 2).'/config/env.php' => config_path('env.php'),
+            dirname(__DIR__, 2) . '/stubs/MainEnvValidator.stub' => app_path('Env/MainEnvValidator.php')
+        ], 'config');
+
+        $this->commands([
+            \Lionix\EnvClient\Commands\EnvGetCommand::class,
+            \Lionix\EnvClient\Commands\EnvSetCommand::class,
+            \Lionix\EnvClient\Commands\EnvCheckCommand::class,
+            \Lionix\EnvClient\Commands\EnvEmptyCommand::class,
+            \Lionix\EnvClient\Commands\MakeEnvRuleCommand::class
+        ]);
+    }
+}

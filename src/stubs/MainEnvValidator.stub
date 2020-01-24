@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Env;
+
+use Lionix\EnvValidator;
+
+class MainEnvValidator extends EnvValidator
+{
+    /**
+     * Validation rules that apply to the .env variables.
+     *
+     * @return array
+     */
+    public function rules() : array
+    {
+        return [
+            //
+        ];
+    }
+}
