@@ -42,7 +42,6 @@ class EnvCheckCommand extends Command
         $validators = config('env.validators', []);
         if(count($validators)){
             $client = new EnvClient();
-            $success = true;
             foreach ($validators as $classname) {
                 $client
                     ->useValidator(new $classname())

@@ -38,9 +38,10 @@ class EnvEmptyCommand extends Command
      */
     public function handle()
     {
-        $noEmptyValues = false;
-        foreach ((new EnvClient())->all() as $key => $value) {
-            if(!boolval($value)){
+        $client = new EnvClient();
+        $noEmptyValues = true;
+        foreach ($client->all() as $key => $value) {
+            if($value == ""){
                 $noEmptyValues = false;
                 $this->warn("$key variable is empty!");
             }

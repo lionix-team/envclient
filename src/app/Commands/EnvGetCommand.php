@@ -38,12 +38,9 @@ class EnvGetCommand extends Command
      */
     public function handle()
     {
+        $client = new EnvClient();
         $key = $this->argument('key');
-        $result = (new EnvClient())->get($key);
-        if(is_null($result)){
-            $this->error("No {$key} variable found!");
-        } else {
-            $this->info($result);
-        }
+        return !is_null($result = $client->get($key)) ?
+            $this->info($result) : $this->error("No {$key} variable found!");
     }
 }
