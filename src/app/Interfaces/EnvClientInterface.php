@@ -100,11 +100,4 @@ interface EnvClientInterface
      * @return EnvClientInterface
      */
     public function update(array $values) : EnvClientInterface;
-
-    /**
-     * Get validator ruleset
-     *
-     * @return array
-     */
-    public function rules() : array;
 }

@@ -27,10 +27,16 @@ class EnvClient implements EnvClientInterface
     /**
      * Env Validator
      *
-     * @var EnvValidatorInterface[]
+     * @var EnvValidatorInterface
      */
     protected $validator;
 
+    /**
+     * Setup default client providers:
+     * Lionix\EnvClient\Services\EnvGetter as getter
+     * Lionix\EnvClient\Services\EnvSetter as setter
+     * Lionix\EnvClient\Services\EnvValidator as validator
+     */
     public function __construct()
     {
         $this->useGetter(new EnvGetter());
@@ -38,18 +44,40 @@ class EnvClient implements EnvClientInterface
         $this->useValidator(new EnvValidator());
     }
 
+    /**
+     * Set getter property
+     *
+     * @param EnvGetterInterface $getter
+     * 
+     * @return EnvClientInterface
+     */
     public function useGetter(EnvGetterInterface $getter) : EnvClientInterface
     {
         $this->getter = $getter;
         return $this;
     }
 
+    /**
+     * Set setter property
+     *
+     * @param EnvSetterInterface $setter
+     * 
+     * @return EnvClientInterface
+     */
     public function useSetter(EnvSetterInterface $setter) : EnvClientInterface
     {
         $this->setter = $setter;
         return $this;
     }
 
+    /**
+     * Set validator property and merge existing errors
+     * with validator errors
+     *
+     * @param EnvValidatorInterface $validator
+     * 
+     * @return EnvClientInterface
+     */
     public function useValidator(EnvValidatorInterface $validator) : EnvClientInterface
     {
         $errorsToMerge = $this->errors();
@@ -58,21 +86,46 @@ class EnvClient implements EnvClientInterface
         return $this;
     }
 
+    /**
+     * Get all .env variables
+     *
+     * @return array
+     */
     public function all() : array
     {
         return $this->getter->all();
     }
 
+    /**
+     * Check if .env variable exists
+     *
+     * @param string $key
+     * @return boolean
+     */
     public function has(string $key) : bool
     {
         return $this->getter->has($key);
     }
 
+    /**
+     * Get .env variable value
+     *
+     * @param string $key
+     * 
+     * @return void
+     */
     public function get(string $key)
     {
         return $this->getter->get($key);
     }
 
+    /**
+     * Set .env variable value if its validated successfully
+     *
+     * @param array $values
+     * 
+     * @return EnvClientInterface
+     */
     public function set(array $values) : EnvClientInterface
     {
         if($this->validate($values)){
@@ -81,30 +134,49 @@ class EnvClient implements EnvClientInterface
         return $this;
     }
 
+    /**
+     * Save the changes applied with set method
+     *
+     * @return EnvClientInterface
+     */
     public function save() : EnvClientInterface
     {
         $this->setter->save();
         return $this;
     }
 
+    /**
+     * Check given values using validator
+     *
+     * @param array $values
+     * 
+     * @return boolean
+     */
     public function validate(array $values) : bool
     {
         return $this->validator->validate($values);
     }
 
+    /**
+     * Get errors
+     *
+     * @return MessageBag
+     */
     public function errors() : MessageBag
     {
         return $this->validator ? $this->validator->errors() : new MessageBag();
     }
 
+    /**
+     * Set and save methods combined
+     *
+     * @param array $values
+     * 
+     * @return EnvClientInterface
+     */
     public function update(array $values) : EnvClientInterface
     {
         $this->set($values);
         return $this->save();
-    }
-
-    public function rules() : array
-    {
-        return $this->validator->rules();
     }
 }
