@@ -2,7 +2,6 @@
 
 namespace Lionix\EnvClient\Services;
 
-use Lionix\EnvClient\EnvGetter;
 use Lionix\EnvClient\Interfaces\EnvSetterInterface;
 
 class EnvSetter implements EnvSetterInterface

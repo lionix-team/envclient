@@ -2,8 +2,6 @@
 
 namespace Lionix\EnvClient\Interfaces;
 
-use Lionix\EnvClient\EnvGetter;
-use Lionix\EnvClient\EnvSetter;
 use Illuminate\Support\MessageBag;
 
 interface EnvClientInterface 

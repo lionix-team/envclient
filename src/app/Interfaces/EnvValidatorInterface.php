@@ -3,7 +3,6 @@
 namespace Lionix\EnvClient\Interfaces;
 
 use Illuminate\Support\MessageBag;
-use Illuminate\Support\Facades\Validator;
 
 interface EnvValidatorInterface
 {

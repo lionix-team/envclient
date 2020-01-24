@@ -5,7 +5,6 @@ namespace Lionix\EnvClient\Services;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\Facades\Validator;
 use Lionix\EnvClient\Interfaces\EnvValidatorInterface;
-use Lionix\EnvClient\Exceptions\InvalidEnvValueException;
 
 class EnvValidator implements EnvValidatorInterface
 {
