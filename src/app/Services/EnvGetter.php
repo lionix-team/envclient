@@ -6,8 +6,6 @@ use Lionix\EnvClient\Interfaces\EnvGetterInterface;
 
 class EnvGetter implements EnvGetterInterface
 {
-    protected $errors = [];
-
     public function get(string $key)
     {
         return env($key, null);

@@ -8,11 +8,10 @@ use Lionix\EnvClient\Interfaces\EnvValidatorInterface;
 
 class EnvValidator implements EnvValidatorInterface
 {
-
     /**
      * Errors property
      *
-     * @var Illuminate\Support\MessageBag|NULLl
+     * @var Illuminate\Support\MessageBag|NULL
      */
     private $errors;
 

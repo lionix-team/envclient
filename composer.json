@@ -15,7 +15,7 @@
     },    
     "autoload-dev": {
         "psr-4": {
-            "Lionix\\EnvClient\\Tests\\": "src/tests"
+            "Lionix\\EnvClient\\Tests\\": "tests"
         }
     },
     "extra": {
