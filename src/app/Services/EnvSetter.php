@@ -2,69 +2,51 @@
 
 namespace Lionix\EnvClient\Services;
 
+use Dotenv\Dotenv;
 use Lionix\EnvClient\Interfaces\EnvSetterInterface;
 
 class EnvSetter implements EnvSetterInterface
 {
-    protected $variables = [];
+    protected $variablesToSet = [];
 
     public function set(array $toSet) : void
     {
-        $sanitized = array_map([ $this, 'sanitize' ], $toSet);
-        $this->variables = array_merge($this->variables, $sanitized);
+        $this->variablesToSet = array_merge(
+            $this->variablesToSet,
+            array_map([$this, "sanitize"], $toSet)
+        );
     }
 
-    public function save() : bool
+    public function save() : void
     {
-        $envFile = app()->environmentFilePath();
-        $envContents = file_get_contents($envFile);
-        foreach($this->variables as $key => $value) {
-            if(!$this->processEnvFileContents(strtoupper($key), $value, $envContents)){
-                return false;
-            };
+        $filepath = app()->environmentFilePath();
+        $contents = file_get_contents($filepath);
+        foreach($this->variablesToSet as $key => $value) {
+            if(!preg_match("/\b".preg_quote($key)."\b=/", $contents)){
+                $contents .= PHP_EOL . "$key=$value";
+            } else {
+                $contents = preg_replace(
+                    "/^".preg_quote($key)."=[^\r\n]*/m",
+                    preg_quote($key)."=".preg_quote($value, "/"), 
+                    $contents
+                );
+            }
         }
-        $fp = fopen($envFile, 'w');
-        fwrite($fp, $envContents);
-        fclose($fp);
-        $this->variables = [];
-        return true;
-    }
-
-    protected function processEnvFileContents(string $key, string $value, string &$envContents)
-    {
-        $valueExisted = !is_null(env($key, null));
-        $sanitizedOldValue = $this->envExport($key);
-        if(!$valueExisted){
-            $envContents .= PHP_EOL . "$key=$value";
-        } elseif($isValid = strlen($value)){
-            $envContents = preg_replace(
-                "/\b".preg_quote($key)."\b\=".preg_quote($sanitizedOldValue, '/')."/i", 
-                preg_quote($key)."=".preg_quote($value, '/'), 
-                $envContents
-            );
-        } else {
-            return false;
-        }
-        return true;
-    }
-
-    protected function envExport(string $key) : string
-    {
-        $env = env($key);
-        if(!is_string($env)){
-            ob_start();
-            var_export($env);
-            $env = ob_get_contents();
-            ob_get_clean();
-        }
-        return $this->sanitize($env);
+        file_put_contents($filepath, $contents);
+        $pathinfo = pathinfo($filepath);
+        $dotenv = Dotenv::create($pathinfo['dirname'], $pathinfo['filename']);
+        $_ENV = $dotenv->load();
+        $this->variablesToSet = [];
     }
 
     protected function sanitize(string $value) : string
     {
-        $toReturn = addslashes(trim(strval($value)));
-        if(preg_match('/\s/', $toReturn)){
-            $toReturn = "\"$toReturn\"";
+        $toReturn = $value;
+        if(is_string($value)){
+            $toReturn = addslashes(trim(strval($toReturn)));
+            if(preg_match("/\s/", $toReturn)){
+                $toReturn = "\"$toReturn\"";
+            }
         }
         return $toReturn;
     }

@@ -50,11 +50,11 @@ interface EnvClientInterface
     public function has(string $key) : bool;
 
     /**
-     * Get .env variable by its key
+     * Get .env variable file value by its key
      *
      * @param string $key
      * 
-     * @return void
+     * @return mixed
      */
     public function get(string $key);
 

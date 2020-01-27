@@ -16,7 +16,7 @@ interface EnvSetterInterface
     /**
      * Apply changes by saving them into the file
      *
-     * @return boolean
+     * @return void
      */
-    public function save() : bool;
+    public function save() : void;
 }

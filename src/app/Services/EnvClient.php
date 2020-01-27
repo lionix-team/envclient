@@ -40,7 +40,6 @@ class EnvClient implements EnvClientInterface
         $this->useGetter(new EnvGetter());
         $this->useSetter(new EnvSetter());
         $this->useValidator(new EnvValidator());
-        $this->getter->update();
     }
 
     /**
@@ -134,15 +133,13 @@ class EnvClient implements EnvClientInterface
     }
 
     /**
-     * Save the changes applied with set method and 
-     * update .env variables from the file
+     * Save the changes applied with set method
      *
      * @return EnvClientInterface
      */
     public function save() : EnvClientInterface
     {
         $this->setter->save();
-        $this->getter->update();
         return $this;
     }
 

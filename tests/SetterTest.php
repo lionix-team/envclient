@@ -3,7 +3,6 @@
 namespace Lionix\EnvClient\Tests;
 
 use Tests\TestCase;
-use Lionix\EnvGetter;
 use Lionix\EnvSetter;
 
 class SetterTest extends TestCase
@@ -24,17 +23,14 @@ class SetterTest extends TestCase
 
         $setter->set([ $keyToCheck => $stringValue ]);
         $setter->save();
-        (new EnvGetter())->update();
         $this->assertSame(env($keyToCheck), $stringValue);
 
         $setter->set([ $keyToCheck => $booleanValue ]);
         $setter->save();
-        (new EnvGetter())->update();
         $this->assertTrue(env($keyToCheck));
 
         $setter->set([ $keyToCheck => $integerValue ]);
         $setter->save();
-        (new EnvGetter())->update();
         $this->assertSame(env($keyToCheck), $integerValue);
     }
 }
