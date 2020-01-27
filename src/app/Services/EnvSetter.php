@@ -32,7 +32,6 @@ class EnvSetter implements EnvSetterInterface
             }
         }
         file_put_contents($filepath, $contents);
-        $pathinfo = pathinfo($filepath);
         $_ENV = array_merge($_ENV, $this->variablesToSet);
         $this->variablesToSet = [];
     }

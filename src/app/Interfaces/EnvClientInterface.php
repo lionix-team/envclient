@@ -77,7 +77,7 @@ interface EnvClientInterface
     public function validate(array $values) : bool;
 
     /**
-     * Get all client errors during class lifetime
+     * Get all client errors during client lifetime
      *
      * @return MessageBag
      */

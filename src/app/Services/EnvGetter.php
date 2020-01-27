@@ -15,11 +15,15 @@ class EnvGetter implements EnvGetterInterface
 
     public function all() : array
     {
-        return $_ENV;
+        $toReturn = [];
+        foreach ($_ENV as $key => $value) {
+            $toReturn[$key] = env($key);
+        }
+        return $toReturn;
     }
 
     public function has(string $key) : bool
     {
-        return array_key_exists($key, $this->all());
+        return array_key_exists($key, $_ENV);
     }
 }

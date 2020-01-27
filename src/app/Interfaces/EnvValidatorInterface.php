@@ -9,7 +9,9 @@ interface EnvValidatorInterface
     /**
      * Merge current errors with given ones
      *
-     * @param Illuminate\Support\MessageBag|NULL $errors
+     * @param Illuminate\Support\MessageBag $errors
+     * 
+     * @return void
      */
     public function mergeErrors(MessageBag $errors) : void;
 
@@ -21,7 +23,7 @@ interface EnvValidatorInterface
     public function rules() : array;
 
     /**
-     * Check if env variable is valid
+     * Check if variables are valid
      *
      * @param array $values
      * 

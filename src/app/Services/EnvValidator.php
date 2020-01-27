@@ -28,7 +28,7 @@ class EnvValidator implements EnvValidatorInterface
     }
 
     /**
-     * Check if env variable is valid
+     * Check if variables are valid
      *
      * @param array $values
      * 

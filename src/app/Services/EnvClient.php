@@ -32,8 +32,7 @@ class EnvClient implements EnvClientInterface
     protected $validator;
 
     /**
-     * Update .env variables from the file and 
-     * setup default client providers
+     * Setup default client providers
      */
     public function __construct()
     {

@@ -5,7 +5,7 @@ namespace Lionix\EnvClient\Interfaces;
 interface EnvSetterInterface 
 {
     /**
-     * Set multiple variables
+     * Set variables
      *
      * @param array $toSet
      * 
@@ -14,7 +14,7 @@ interface EnvSetterInterface
     public function set(array $toSet) : void;
 
     /**
-     * Apply changes by saving them into the file
+     * Apply changes by saving them
      *
      * @return void
      */
