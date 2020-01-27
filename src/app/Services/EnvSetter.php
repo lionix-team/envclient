@@ -26,6 +26,7 @@ class EnvSetter implements EnvSetterInterface
         $fp = fopen($envFile, 'w');
         fwrite($fp, $envContents);
         fclose($fp);
+        $this->variables = [];
         return true;
     }
 
