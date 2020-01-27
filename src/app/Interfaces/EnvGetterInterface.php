@@ -5,6 +5,13 @@ namespace Lionix\EnvClient\Interfaces;
 interface EnvGetterInterface 
 {
     /**
+     * Update the .env variables from the file
+     * 
+     * @return void
+     */
+    public function update() : void;
+
+    /**
      * Check if value exists
      *
      * @param string $key
