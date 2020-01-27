@@ -32,12 +32,16 @@ class EnvSetter implements EnvSetterInterface
 
     protected function processEnvFileContents(string $key, string $value, string &$envContents)
     {
-        $valueExisted = !is_null(env($key));
+        $valueExisted = !is_null(env($key, null));
         $sanitizedOldValue = $this->envExport($key);
         if(!$valueExisted){
             $envContents .= PHP_EOL . "$key=$value";
-        } elseif(strlen($value)){
-            $envContents = preg_replace("/\b$key\b\=$sanitizedOldValue/i", "$key=$value", $envContents);
+        } elseif($isValid = strlen($value)){
+            $envContents = preg_replace(
+                "/\b".preg_quote($key)."\b\=".preg_quote($sanitizedOldValue, '/')."/i", 
+                preg_quote($key)."=".preg_quote($value, '/'), 
+                $envContents
+            );
         } else {
             return false;
         }
@@ -58,9 +62,7 @@ class EnvSetter implements EnvSetterInterface
 
     protected function sanitize(string $value) : string
     {
-        $toReturn = strval($value);
-        $toReturn = trim($value);
-        $toReturn = stripslashes($toReturn);
+        $toReturn = addslashes(trim(strval($value)));
         if(preg_match('/\s/', $toReturn)){
             $toReturn = "\"$toReturn\"";
         }
