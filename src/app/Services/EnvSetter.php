@@ -2,7 +2,6 @@
 
 namespace Lionix\EnvClient\Services;
 
-use Dotenv\Dotenv;
 use Lionix\EnvClient\Interfaces\EnvSetterInterface;
 
 class EnvSetter implements EnvSetterInterface
@@ -34,8 +33,7 @@ class EnvSetter implements EnvSetterInterface
         }
         file_put_contents($filepath, $contents);
         $pathinfo = pathinfo($filepath);
-        $dotenv = Dotenv::create($pathinfo['dirname'], $pathinfo['filename']);
-        $_ENV = $dotenv->load();
+        $_ENV = array_merge($_ENV, $this->variablesToSet);
         $this->variablesToSet = [];
     }
 
