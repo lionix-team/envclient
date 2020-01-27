@@ -12,14 +12,14 @@ class EnvCheckCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'env:check';
+    protected $signature = "env:check";
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Run .env global validation rules';
+    protected $description = "Run .env global validation rules";
 
     /**
      * Create a new command instance.
@@ -39,7 +39,7 @@ class EnvCheckCommand extends Command
      */
     public function handle()
     {
-        $validators = config('env.validators', []);
+        $validators = config("env.validators", []);
         if(count($validators)){
             $client = new EnvClient();
             foreach ($validators as $classname) {
@@ -48,14 +48,14 @@ class EnvCheckCommand extends Command
                     ->validate($client->all());
             }
             if($client->errors()->isEmpty()){
-                $this->info('All .env variables are valid!');
+                $this->info("All .env variables are valid!");
             } else {
                 foreach ($client->errors()->all() as $err) {
                     $this->error($err);
                 }
             }
         } else {
-            $this->error('No global validation rules provided!');
+            $this->error("No global validation rules provided!");
         }
     }
 }

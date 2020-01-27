@@ -12,14 +12,14 @@ class EnvEmptyCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'env:empty';
+    protected $signature = "env:empty";
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Get empty .env variables';
+    protected $description = "Get empty .env variables";
 
     /**
      * Create a new command instance.
@@ -43,7 +43,7 @@ class EnvEmptyCommand extends Command
         foreach ($client->all() as $key => $value) {
             if($value == ""){
                 $noEmptyValues = false;
-                $this->warn("$key variable is empty!");
+                $this->warn("{$key} variable is empty!");
             }
         }
         if($noEmptyValues){

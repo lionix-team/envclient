@@ -40,7 +40,7 @@ class EnvSetter implements EnvSetterInterface
     {
         $toReturn = $value;
         if(is_string($value)){
-            $toReturn = addslashes(trim(strval($toReturn)));
+            $toReturn = addslashes(trim($toReturn));
             if(preg_match("/\s/", $toReturn)){
                 $toReturn = "\"$toReturn\"";
             }

@@ -16,7 +16,7 @@ class GetterTest extends TestCase
     {
         $getter = new EnvGetter();
         foreach ($getter->all() as $key => $value) {
-            $this->assertEquals($getter->get($key), env($key));
+            $this->assertEquals($value, env($key));
         }
     }
 }

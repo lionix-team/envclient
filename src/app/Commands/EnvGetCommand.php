@@ -12,14 +12,14 @@ class EnvGetCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'env:get {key}';
+    protected $signature = "env:get {key}";
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Get .env variable';
+    protected $description = "Get .env variable";
 
     /**
      * Create a new command instance.
@@ -39,7 +39,7 @@ class EnvGetCommand extends Command
     public function handle()
     {
         $client = new EnvClient();
-        $key = $this->argument('key');
+        $key = $this->argument("key");
         return !is_null($result = $client->get($key)) ?
             $this->info($result) : $this->error("No {$key} variable found!");
     }

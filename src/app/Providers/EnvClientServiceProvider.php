@@ -19,9 +19,9 @@ class EnvClientServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            dirname(__DIR__, 2) . '/config/env.php' => config_path('env.php'),
-            dirname(__DIR__, 2) . '/stubs/MainEnvValidator.stub' => app_path('Env/MainEnvValidator.php')
-        ], 'config');
+            dirname(__DIR__, 2) . "/config/env.php" => config_path("env.php"),
+            dirname(__DIR__, 2) . "/stubs/MainEnvValidator.stub" => app_path("Env/MainEnvValidator.php")
+        ], "config");
 
         if($this->app->runningInConsole()){
             $this->commands([

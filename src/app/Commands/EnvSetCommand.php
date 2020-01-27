@@ -12,14 +12,14 @@ class EnvSetCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'env:set {key} {value}';
+    protected $signature = "env:set {key} {value}";
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Set .env variable';
+    protected $description = "Set .env variable";
 
     /**
      * Create a new command instance.
@@ -40,9 +40,9 @@ class EnvSetCommand extends Command
     public function handle()
     {
         $client = new EnvClient();
-        $key = strtoupper($this->argument('key'));
-        $value = $this->argument('value');
-        $validators = config('env.validators', []);
+        $key = strtoupper($this->argument("key"));
+        $value = $this->argument("value");
+        $validators = config("env.validators", []);
         if(count($validators)){
             foreach ($validators as $classname) {
                 $validator = new $classname();
