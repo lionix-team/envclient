@@ -32,16 +32,15 @@ class EnvClient implements EnvClientInterface
     protected $validator;
 
     /**
-     * Setup default client providers:
-     * Lionix\EnvClient\Services\EnvGetter as getter
-     * Lionix\EnvClient\Services\EnvSetter as setter
-     * Lionix\EnvClient\Services\EnvValidator as validator
+     * Update .env variables from the file and 
+     * setup default client providers
      */
     public function __construct()
     {
         $this->useGetter(new EnvGetter());
         $this->useSetter(new EnvSetter());
         $this->useValidator(new EnvValidator());
+        $this->getter->update();
     }
 
     /**
@@ -135,13 +134,15 @@ class EnvClient implements EnvClientInterface
     }
 
     /**
-     * Save the changes applied with set method
+     * Save the changes applied with set method and 
+     * update .env variables from the file
      *
      * @return EnvClientInterface
      */
     public function save() : EnvClientInterface
     {
         $this->setter->save();
+        $this->getter->update();
         return $this;
     }
 
