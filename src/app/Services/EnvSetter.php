@@ -20,13 +20,13 @@ class EnvSetter implements EnvSetterInterface
     {
         $filepath = app()->environmentFilePath();
         $contents = file_get_contents($filepath);
-        foreach($this->variablesToSet as $key => $value) {
-            if(!preg_match("/\b".preg_quote($key)."\b=/", $contents)){
+        foreach ($this->variablesToSet as $key => $value) {
+            if (!preg_match("/\b".preg_quote($key)."\b=/", $contents)) {
                 $contents .= PHP_EOL . "$key=$value";
             } else {
                 $contents = preg_replace(
                     "/^".preg_quote($key)."=[^\r\n]*/m",
-                    preg_quote($key)."=".preg_quote($value, "/"), 
+                    $key."=".$value, 
                     $contents
                 );
             }
@@ -39,9 +39,9 @@ class EnvSetter implements EnvSetterInterface
     protected function sanitize(string $value) : string
     {
         $toReturn = $value;
-        if(is_string($value)){
-            $toReturn = addslashes(trim($toReturn));
-            if(preg_match("/\s/", $toReturn)){
+        if (is_string($value)) {
+            $toReturn = trim($toReturn);
+            if (preg_match("/\s/", $toReturn)) {
                 $toReturn = "\"$toReturn\"";
             }
         }

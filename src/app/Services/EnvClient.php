@@ -125,7 +125,7 @@ class EnvClient implements EnvClientInterface
      */
     public function set(array $values) : EnvClientInterface
     {
-        if($this->validate($values)){
+        if ($this->validate($values)) {
             $this->setter->set($values);
         }
         return $this;

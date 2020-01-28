@@ -3,7 +3,7 @@
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
-use Lionix\EnvClient;
+use Lionix\EnvClient\Services\EnvClient;
 
 class EnvGetCommand extends Command
 {

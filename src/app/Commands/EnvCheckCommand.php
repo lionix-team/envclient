@@ -3,7 +3,7 @@
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
-use Lionix\EnvClient;
+use Lionix\EnvClient\Services\EnvClient;
 
 class EnvCheckCommand extends Command
 {
@@ -40,14 +40,14 @@ class EnvCheckCommand extends Command
     public function handle()
     {
         $validators = config("env.validators", []);
-        if(count($validators)){
+        if (count($validators)) {
             $client = new EnvClient();
             foreach ($validators as $classname) {
                 $client
                     ->useValidator(new $classname())
                     ->validate($client->all());
             }
-            if($client->errors()->isEmpty()){
+            if ($client->errors()->isEmpty()) {
                 $this->info("All .env variables are valid!");
             } else {
                 foreach ($client->errors()->all() as $err) {

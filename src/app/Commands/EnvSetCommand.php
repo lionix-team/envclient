@@ -3,7 +3,7 @@
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
-use Lionix\EnvClient;
+use Lionix\EnvClient\Services\EnvClient;
 
 class EnvSetCommand extends Command
 {
@@ -43,7 +43,7 @@ class EnvSetCommand extends Command
         $key = strtoupper($this->argument("key"));
         $value = $this->argument("value");
         $validators = config("env.validators", []);
-        if(count($validators)){
+        if (count($validators)) {
             foreach ($validators as $classname) {
                 $validator = new $classname();
                 $client
@@ -51,7 +51,7 @@ class EnvSetCommand extends Command
                     ->validate([ $key => $value ]);
             }
         }
-        if($client->errors()->has($key)){
+        if ($client->errors()->has($key)) {
             foreach($client->errors()->get($key) as $err){
                 $this->error($err);
             }

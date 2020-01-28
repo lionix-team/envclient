@@ -3,7 +3,7 @@
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
-use Lionix\EnvClient;
+use Lionix\EnvClient\Services\EnvClient;
 
 class EnvEmptyCommand extends Command
 {
@@ -41,12 +41,12 @@ class EnvEmptyCommand extends Command
         $client = new EnvClient();
         $noEmptyValues = true;
         foreach ($client->all() as $key => $value) {
-            if($value == ""){
+            if ($value == "") {
                 $noEmptyValues = false;
                 $this->warn("{$key} variable is empty!");
             }
         }
-        if($noEmptyValues){
+        if ($noEmptyValues) {
             $this->info("All .env variables are set!");
         }
     }

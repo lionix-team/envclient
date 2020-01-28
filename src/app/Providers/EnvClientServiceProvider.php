@@ -23,7 +23,7 @@ class EnvClientServiceProvider extends ServiceProvider
             dirname(__DIR__, 2) . "/stubs/MainEnvValidator.stub" => app_path("Env/MainEnvValidator.php")
         ], "config");
 
-        if($this->app->runningInConsole()){
+        if ($this->app->runningInConsole()) {
             $this->commands([
                 \Lionix\EnvClient\Commands\EnvCheckCommand::class,
                 \Lionix\EnvClient\Commands\EnvEmptyCommand::class,
