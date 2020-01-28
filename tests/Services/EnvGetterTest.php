@@ -1,11 +1,11 @@
 <?php
 
-namespace Lionix\EnvClient\Tests;
+namespace Lionix\EnvClient\Tests\Services;
 
-use Tests\TestCase;
-use Lionix\EnvGetter;
+use Lionix\EnvClient\Tests\TestCase;
+use Lionix\EnvClient\Services\EnvGetter;
 
-class GetterTest extends TestCase
+class EnvGetterTest extends TestCase
 {
     /**
      * Testing base package getter class

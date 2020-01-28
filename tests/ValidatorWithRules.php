@@ -9,9 +9,9 @@ class ValidatorWithRules extends EnvValidator
     public function rules() : array
     {
         return [
-            'VALIDATOR_TEST_1' => 'required|string|min:3',
-            'VALIDATOR_TEST_2' => 'numeric',
-            'VALIDATOR_TEST_3' => 'required|boolean'
+            "APP_NAME" => "required|string|min:4",
+            "BOOLEAN_VALUE" => "required|boolean",
+            "NUMERIC_VALUE" => "numeric"
         ];
     }
 }
