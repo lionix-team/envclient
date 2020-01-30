@@ -20,7 +20,7 @@ class EnvClientServiceProvider extends ServiceProvider
     {
         $this->publishes([
             dirname(__DIR__, 2) . "/config/env.php" => config_path("env.php"),
-            dirname(__DIR__, 2) . "/stubs/MainEnvValidator.stub" => app_path("Env/MainEnvValidator.php")
+            dirname(__DIR__, 2) . "/stubs/BaseEnvValidationRules.stub" => app_path("Env/BaseEnvValidationRules.php")
         ], "config");
 
         if ($this->app->runningInConsole()) {

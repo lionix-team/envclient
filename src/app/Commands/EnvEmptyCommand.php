@@ -19,7 +19,7 @@ class EnvEmptyCommand extends Command
      *
      * @var string
      */
-    protected $description = "Get empty .env variables";
+    protected $description = "Print empty .env variables";
 
     /**
      * Create a new command instance.

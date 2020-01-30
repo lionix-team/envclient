@@ -19,7 +19,7 @@ class EnvCheckCommand extends Command
      *
      * @var string
      */
-    protected $description = "Run .env global validation rules";
+    protected $description = "Apply .env global validation rules";
 
     /**
      * Create a new command instance.
@@ -39,7 +39,7 @@ class EnvCheckCommand extends Command
      */
     public function handle()
     {
-        $validators = config("env.validators", []);
+        $validators = config("env.rules", []);
         if (count($validators)) {
             $client = new EnvClient();
             foreach ($validators as $classname) {

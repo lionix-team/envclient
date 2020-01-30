@@ -3,36 +3,40 @@
 namespace Lionix\EnvClient\Services;
 
 use Illuminate\Support\MessageBag;
-use Lionix\EnvClient\Interfaces\EnvClientInterface;
-use Lionix\EnvClient\Interfaces\EnvGetterInterface;
-use Lionix\EnvClient\Interfaces\EnvSetterInterface;
-use Lionix\EnvClient\Interfaces\EnvValidatorInterface;
+use Lionix\EnvClient\Interfaces\{
+    EnvClientInterface, 
+    EnvGetterInterface, 
+    EnvSetterInterface, 
+    EnvValidatorInterface
+};
 
 class EnvClient implements EnvClientInterface
 {
     /**
      * Env Getter
      *
-     * @var EnvGetterInterface
+     * @var Lionix\EnvClient\Interfaces\EnvGetterInterface
      */
     protected $getter;
 
     /**
      * Env Setter
      *
-     * @var EnvSetterInterface
+     * @var Lionix\EnvClient\Interfaces\EnvSetterInterface
      */
     protected $setter;
 
     /**
      * Env Validator
      *
-     * @var EnvValidatorInterface
+     * @var Lionix\EnvClient\Interfaces\EnvValidatorInterface
      */
     protected $validator;
 
     /**
      * Setup default client providers
+     * 
+     * @return void
      */
     public function __construct()
     {
@@ -44,11 +48,11 @@ class EnvClient implements EnvClientInterface
     /**
      * Set getter property
      *
-     * @param EnvGetterInterface $getter
+     * @param Lionix\EnvClient\Interfaces\EnvGetterInterface $getter
      * 
-     * @return EnvClientInterface
+     * @return self
      */
-    public function useGetter(EnvGetterInterface $getter) : EnvClientInterface
+    public function useGetter(EnvGetterInterface $getter) : self
     {
         $this->getter = $getter;
         return $this;
@@ -57,11 +61,11 @@ class EnvClient implements EnvClientInterface
     /**
      * Set setter property
      *
-     * @param EnvSetterInterface $setter
+     * @param Lionix\EnvClient\Interfaces\EnvSetterInterface $setter
      * 
-     * @return EnvClientInterface
+     * @return self
      */
-    public function useSetter(EnvSetterInterface $setter) : EnvClientInterface
+    public function useSetter(EnvSetterInterface $setter) : self
     {
         $this->setter = $setter;
         return $this;
@@ -71,11 +75,11 @@ class EnvClient implements EnvClientInterface
      * Set validator property and merge existing errors
      * with validator errors
      *
-     * @param EnvValidatorInterface $validator
+     * @param Lionix\EnvClient\Interfaces\EnvValidatorInterface $validator
      * 
-     * @return EnvClientInterface
+     * @return self
      */
-    public function useValidator(EnvValidatorInterface $validator) : EnvClientInterface
+    public function useValidator(EnvValidatorInterface $validator) : self
     {
         $errorsToMerge = $this->errors();
         $this->validator = $validator;
@@ -109,7 +113,7 @@ class EnvClient implements EnvClientInterface
      *
      * @param string $key
      * 
-     * @return void
+     * @return mixed
      */
     public function get(string $key)
     {
@@ -121,9 +125,9 @@ class EnvClient implements EnvClientInterface
      *
      * @param array $values
      * 
-     * @return EnvClientInterface
+     * @return self
      */
-    public function set(array $values) : EnvClientInterface
+    public function set(array $values) : self
     {
         if ($this->validate($values)) {
             $this->setter->set($values);
@@ -134,11 +138,27 @@ class EnvClient implements EnvClientInterface
     /**
      * Save the changes applied with set method
      *
-     * @return EnvClientInterface
+     * @return self
      */
-    public function save() : EnvClientInterface
+    public function save() : self
     {
         $this->setter->save();
+        return $this;
+    }
+
+    /**
+     * Set and save methods combined
+     *
+     * @param array $values
+     * 
+     * @return self
+     */
+    public function update(array $values) : self
+    {
+        if ($this->validate($values)) {
+            $this->setter->set($values);
+            $this->setter->save();
+        }
         return $this;
     }
 
@@ -157,23 +177,10 @@ class EnvClient implements EnvClientInterface
     /**
      * Get errors
      *
-     * @return MessageBag
+     * @return Illuminate\Support\MessageBag
      */
     public function errors() : MessageBag
     {
         return $this->validator ? $this->validator->errors() : new MessageBag();
-    }
-
-    /**
-     * Set and save methods combined
-     *
-     * @param array $values
-     * 
-     * @return EnvClientInterface
-     */
-    public function update(array $values) : EnvClientInterface
-    {
-        $this->set($values);
-        return $this->save();
     }
 }

@@ -7,29 +7,36 @@ use Illuminate\Support\MessageBag;
 interface EnvClientInterface 
 {
     /**
-     * Change client getter provider
-     *
-     * @param EnvGetterInterface $getter
+     * Setup default dependencies
      * 
-     * @return EnvClientInterface
+     * @return void
+     */
+    public function __construct();
+
+    /**
+     * Change client getter dependency
+     *
+     * @param Lionix\EnvClient\Interfaces\EnvGetterInterface $getter
+     * 
+     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
      */
     public function useGetter(EnvGetterInterface $getter) : EnvClientInterface;
 
     /**
-     * Change client setter provider
+     * Change client setter dependency
      *
-     * @param EnvSetterInterface $setter
+     * @param Lionix\EnvClient\Interfaces\EnvGetterInterface $setter
      * 
-     * @return EnvClientInterface
+     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
      */
     public function useSetter(EnvSetterInterface $setter) : EnvClientInterface;
 
     /**
-     * Change client validator provider
+     * Change client validator dependency
      *
-     * @param EnvValidatorInterface $validator
+     * @param Lionix\EnvClient\Interfaces\EnvGetterInterface $validator
      * 
-     * @return EnvClientInterface
+     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
      */
     public function useValidator(EnvValidatorInterface $validator) : EnvClientInterface;
 
@@ -63,9 +70,26 @@ interface EnvClientInterface
      *
      * @param array $values
      * 
-     * @return EnvClientInterface
+     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
      */
     public function set(array $values) : EnvClientInterface;
+
+
+    /**
+     * Save changes to .env file
+     *
+     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
+     */
+    public function save() : EnvClientInterface;
+
+    /**
+     * Set and update associative array values
+     *
+     * @param array $values
+     * 
+     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
+     */
+    public function update(array $values) : EnvClientInterface;
 
     /**
      * Validate associative array values
@@ -82,20 +106,4 @@ interface EnvClientInterface
      * @return MessageBag
      */
     public function errors() : MessageBag;
-
-    /**
-     * Save changes to .env file
-     *
-     * @return EnvClientInterface
-     */
-    public function save() : EnvClientInterface;
-
-    /**
-     * Set and update associative array values
-     *
-     * @param array $values
-     * 
-     * @return EnvClientInterface
-     */
-    public function update(array $values) : EnvClientInterface;
 }

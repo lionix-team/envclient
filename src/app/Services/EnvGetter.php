@@ -2,13 +2,14 @@
 
 namespace Lionix\EnvClient\Services;
 
+use Illuminate\Support\Env;
 use Lionix\EnvClient\Interfaces\EnvGetterInterface;
 
 class EnvGetter implements EnvGetterInterface
 {
     public function get(string $key)
     {
-        return env($key);
+        return Env::get($key);
     }
 
     public function all() : array

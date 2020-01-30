@@ -28,9 +28,9 @@
             ],
             "aliases": {
                 "Lionix\\EnvClient": "Lionix\\EnvClient\\Services\\EnvClient",
-                "Lionix\\EnvValidator": "Lionix\\EnvClient\\Services\\EnvValidator",
                 "Lionix\\EnvGetter": "Lionix\\EnvClient\\Services\\EnvGetter",
-                "Lionix\\EnvSetter": "Lionix\\EnvClient\\Services\\EnvSetter"
+                "Lionix\\EnvSetter": "Lionix\\EnvClient\\Services\\EnvSetter",
+                "Lionix\\EnvValidator": "Lionix\\EnvClient\\Services\\EnvValidator"
             }
         }
     },

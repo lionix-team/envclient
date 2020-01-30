@@ -11,7 +11,7 @@ return [
      * 
      * @var array
      */
-    "validators" => [
-        \App\Env\MainEnvValidator::class
+    "rules" => [
+        \App\Env\BaseEnvValidationRules::class
     ]
 ];

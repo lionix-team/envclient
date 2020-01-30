@@ -42,7 +42,7 @@ class EnvSetCommand extends Command
         $client = new EnvClient();
         $key = strtoupper($this->argument("key"));
         $value = $this->argument("value");
-        $validators = config("env.validators", []);
+        $validators = config("env.rules", []);
         if (count($validators)) {
             foreach ($validators as $classname) {
                 $validator = new $classname();

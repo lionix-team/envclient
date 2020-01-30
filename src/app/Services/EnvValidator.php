@@ -11,9 +11,9 @@ class EnvValidator implements EnvValidatorInterface
     /**
      * Errors property
      *
-     * @var Illuminate\Support\MessageBag|NULL
+     * @var Illuminate\Support\MessageBag
      */
-    private $errors;
+    protected $errors;
 
     /**
      * Rules applied to the validation
@@ -48,6 +48,16 @@ class EnvValidator implements EnvValidatorInterface
     }
 
     /**
+     * Get validation errors
+     * 
+     * @return Illuminate\Support\MessageBag
+     */
+    public function errors() : MessageBag
+    {
+        return $this->errors ?? new MessageBag();
+    }
+
+    /**
      * Merge errors
      *
      * @param MessageBag $errors
@@ -57,15 +67,5 @@ class EnvValidator implements EnvValidatorInterface
     public function mergeErrors(MessageBag $errors) : void
     {
         $this->errors = $this->errors()->merge($errors);
-    }
-
-    /**
-     * Get validation errors
-     * 
-     * @return Illuminate\Support\MessageBag
-     */
-    public function errors() : MessageBag
-    {
-        return $this->errors ?? new MessageBag();
     }
 }

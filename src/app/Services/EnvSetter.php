@@ -8,12 +8,13 @@ class EnvSetter implements EnvSetterInterface
 {
     protected $variablesToSet = [];
 
-    public function set(array $toSet) : void
+    public function set(array $values) : void
     {
         $this->variablesToSet = array_merge(
             $this->variablesToSet,
-            array_map([$this, "sanitize"], $toSet)
+            array_map([$this, "sanitize"], $values)
         );
+        $_ENV = array_merge($_ENV, $this->variablesToSet);
     }
 
     public function save() : void
@@ -32,7 +33,6 @@ class EnvSetter implements EnvSetterInterface
             }
         }
         file_put_contents($filepath, $contents);
-        $_ENV = array_merge($_ENV, $this->variablesToSet);
         $this->variablesToSet = [];
     }
 

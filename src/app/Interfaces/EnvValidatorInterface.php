@@ -7,15 +7,6 @@ use Illuminate\Support\MessageBag;
 interface EnvValidatorInterface
 {
     /**
-     * Merge current errors with given ones
-     *
-     * @param Illuminate\Support\MessageBag $errors
-     * 
-     * @return void
-     */
-    public function mergeErrors(MessageBag $errors) : void;
-
-    /**
      * Get validation rules
      *
      * @return array
@@ -37,4 +28,13 @@ interface EnvValidatorInterface
      * @return Illuminate\Support\MessageBag
      */
     public function errors() : MessageBag;
+
+    /**
+     * Merge current errors with given ones
+     *
+     * @param Illuminate\Support\MessageBag $errors
+     * 
+     * @return void
+     */
+    public function mergeErrors(MessageBag $errors) : void;
 }

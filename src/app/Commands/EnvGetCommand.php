@@ -19,7 +19,7 @@ class EnvGetCommand extends Command
      *
      * @var string
      */
-    protected $description = "Get .env variable";
+    protected $description = "Print .env variable";
 
     /**
      * Create a new command instance.

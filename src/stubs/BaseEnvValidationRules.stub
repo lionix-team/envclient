@@ -4,7 +4,7 @@ namespace App\Env;
 
 use Lionix\EnvValidator;
 
-class MainEnvValidator extends EnvValidator
+class BaseEnvValidationRules extends EnvValidator
 {
     /**
      * Validation rules that apply to the .env variables.

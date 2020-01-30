@@ -19,7 +19,7 @@ class MakeEnvRuleCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $description = "Create a new .env validator rules";
+    protected $description = "Create a new .env validation rules";
 
 	/**
 	 * The type of class being generated.
@@ -39,7 +39,7 @@ class MakeEnvRuleCommand extends GeneratorCommand
     protected function replaceClass($stub, $name)
     {
         $stub = parent::replaceClass($stub, $name);
-        return str_replace("MainEnvValidator", $this->argument("name"), $stub);
+        return str_replace("BaseEnvValidationRules", $this->argument("name"), $stub);
     }
 
 	/**
@@ -49,7 +49,7 @@ class MakeEnvRuleCommand extends GeneratorCommand
 	 */
 	protected function getStub()
 	{
-		return dirname(__DIR__, 2)."/stubs/MainEnvValidator.stub";
+		return dirname(__DIR__, 2)."/stubs/BaseEnvValidationRules.stub";
     }
     
 	/**
