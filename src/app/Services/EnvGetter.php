@@ -20,7 +20,7 @@ class EnvGetter implements EnvGetterInterface
             while (($line = fgets($fp)) !== false) {
                 if (preg_match("/^(\w*)"."=[^\r\n]*/m", $line)) {
                     $key = strtok($line, "=");
-                    $toReturn[$key] = env($key);
+                    $toReturn[$key] = $this->get($key);
                 }
             }
             fclose($fp);
