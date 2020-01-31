@@ -10,6 +10,17 @@ composer require lionix/envclient
 ```
 
 
+## Artisan commands
+
+| Signature | Description |
+|--|--|
+| `env:get {key}` | Prints .env variable value |
+| `env:set {key} {value}` | Sets .env variable if validation rules are passed |
+| `env:check` | Check all env variables for validness |
+| `env:empty` | Print empty .env variables |
+| `make:envrule {name}` | Create a new .env validation rules |
+
+
 ## Basic usage
 
 Set an environment variable using `env:set` artisan command. 
@@ -102,22 +113,11 @@ The selected DB_CONNECTION is invalid.
 ```
 
 
-## Artisan commands
-
-| Signature | Description |
-|--|--|
-| `env:get {key}` | Prints .env variable value |
-| `env:set {key} {value}` | Sets .env variable if validation rules are passed |
-| `env:check` | Check all env variables for validness |
-| `env:empty` | Print empty .env variables |
-| `make:envrule {name}` | Create a new .env validation rules |
-
-
-## Create new environmental validation rules
+## Create a new environmental validation rules
 
 ### Run the `make:envrule` command
 
-By default, script will generate a class in `App/Env` namespace.
+By default, the script will generate a class in `App/Env` namespace.
 
 
 #### Example:
@@ -168,7 +168,7 @@ public function rules() : array
 ...
 ```
 
-### Use the rules:
+### Apply the rules:
 
 You can add the `DatabaseEnvRules` class to `env.php` configuration file at the `rules` key. That way all the rules specified in the class will affect package artisan commands.
 
