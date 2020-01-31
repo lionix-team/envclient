@@ -32,7 +32,7 @@ class EnvEmptyCommand extends Command
     }
 
     /**
-     * Checking .env empty variables
+     * Print .env empty variables
      *
      * @return void
      */

@@ -34,6 +34,7 @@ class EnvCheckCommand extends Command
     /**
      * Checking all .env variables with defined
      * validators in env.php configuration file at validators key
+     * and print the results
      *
      * @return void
      */

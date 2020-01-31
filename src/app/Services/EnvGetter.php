@@ -7,11 +7,24 @@ use Lionix\EnvClient\Interfaces\EnvGetterInterface;
 
 class EnvGetter implements EnvGetterInterface
 {
+    /**
+     * Wrap Illuminate\Support\Env get method
+     *
+     * @param string $key
+     * 
+     * @return mixed
+     */
     public function get(string $key)
     {
         return Env::get($key);
     }
 
+    /**
+     * Get all variable keys from the file
+     * and map them with get method
+     *
+     * @return array
+     */
     public function all() : array
     {
         $toReturn = [];
@@ -28,6 +41,13 @@ class EnvGetter implements EnvGetterInterface
         return $toReturn;
     }
 
+    /**
+     * Check if env file has the given key
+     *
+     * @param string $key
+     * 
+     * @return boolean
+     */
     public function has(string $key) : bool
     {
         return preg_match(

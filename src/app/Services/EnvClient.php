@@ -101,6 +101,7 @@ class EnvClient implements EnvClientInterface
      * Check if .env variable exists
      *
      * @param string $key
+     * 
      * @return boolean
      */
     public function has(string $key) : bool

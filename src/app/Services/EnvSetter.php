@@ -6,8 +6,21 @@ use Lionix\EnvClient\Interfaces\EnvSetterInterface;
 
 class EnvSetter implements EnvSetterInterface
 {
+    /**
+     * Variables that are to be merged with current
+     * env variables
+     *
+     * @var array
+     */
     protected $variablesToSet = [];
 
+    /**
+     * Set sanitized env values and merge them with $_ENV global
+     *
+     * @param array $values
+     * 
+     * @return void
+     */
     public function set(array $values) : void
     {
         $this->variablesToSet = array_merge(
@@ -17,6 +30,11 @@ class EnvSetter implements EnvSetterInterface
         $_ENV = array_merge($_ENV, $this->variablesToSet);
     }
 
+    /**
+     * Save env values to the file
+     * 
+     * @return void
+     */
     public function save() : void
     {
         $filepath = app()->environmentFilePath();
@@ -36,6 +54,13 @@ class EnvSetter implements EnvSetterInterface
         $this->variablesToSet = [];
     }
 
+    /**
+     * Sanitize given value
+     *
+     * @param string $value
+     * 
+     * @return string
+     */
     protected function sanitize(string $value) : string
     {
         $toReturn = $value;

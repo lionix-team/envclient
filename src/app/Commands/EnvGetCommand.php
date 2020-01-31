@@ -32,7 +32,7 @@ class EnvGetCommand extends Command
     }
 
     /**
-     * Get .env variable
+     * Print .env variable
      *
      * @return void
      */

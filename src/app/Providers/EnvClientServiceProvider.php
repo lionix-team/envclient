@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 class EnvClientServiceProvider extends ServiceProvider
 {
     /**
-     * Publis default .env global ruleset and register commands:
+     * Publish default .env global ruleset and register commands:
      * - env:check
      * - env:empty
      * - env:get
