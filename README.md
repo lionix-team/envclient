@@ -87,7 +87,7 @@ public function rules() : array
 ...
 ```
 
-This way if you try to set invalid value to the `DB_CONNECTION` variable with `env:set` command, the console will print out an error 
+This way if you try to set an invalid value to the `DB_CONNECTION` variable with `env:set` command, the console will print out an error 
 
 ```
 $ php artisan env:set DB_CONNECTION SomeInvalidValue
@@ -117,7 +117,7 @@ The selected DB_CONNECTION is invalid.
 
 ### Run the `make:envrule` command
 
-By default script will generate a class in `App/Env` namespace.
+By default, script will generate a class in `App/Env` namespace.
 
 
 #### Example:
@@ -170,7 +170,7 @@ public function rules() : array
 
 ### Use the rules:
 
-You can add the `DatabaseEnvRules` class to `env.php` configuration file ar `rules` key. That way all th rules specified in the class will affect package artisan commands.
+You can add the `DatabaseEnvRules` class to `env.php` configuration file at the `rules` key. That way all the rules specified in the class will affect package artisan commands.
 
 `config/env.php`  
 
