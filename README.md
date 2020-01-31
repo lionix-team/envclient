@@ -1,6 +1,6 @@
 
 # EnvClient for Laravel 6+
-Manage and validate environmental variables with artisan console commands and facades
+Manage and validate environmental variables with artisan console commands, environmental rules and facades
 
 
 ## Installation
@@ -322,3 +322,9 @@ if ($client->errors()->isNotEmpty()) {
   
 - `void` : **mergeErrors(_Illuminate\Support\MessageBag_ $errors)**  
   Merge given MessageBag with current errors
+
+
+## Credits:
+
+- [Stas Vartanyan](https://github.com/vaawebdev)
+- [Lionix Team](https://github.com/lionix-team)
