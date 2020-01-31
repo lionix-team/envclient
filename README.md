@@ -203,7 +203,7 @@ Or you can use `Lionix\EnvClient` Facade to validate the input with given valida
 $client = new \Lionix\Envclient();
 $client
     ->useValidator(new \App\Env\DatabaseEnvRules())
-    ->update($databaseCredintnails);
+    ->update($databaseCredentials);
 
 if ($client->errors()->isNotEmpty()) {
     // handle errors
