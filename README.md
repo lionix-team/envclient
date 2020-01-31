@@ -205,7 +205,7 @@ $client
     ->useValidator(new \App\Env\DatabaseEnvRules())
     ->update($databaseCredintnails);
 
-if ($client->errors()->hasAny()) {
+if ($client->errors()->isNotEmpty()) {
     // handle errors
 } else {
     // success, the variables are updated
