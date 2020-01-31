@@ -9,7 +9,7 @@ class TestCase extends BaseTestCase
 {
     protected function getPackageProviders($app)
     {
-        return ['Lionix\EnvClient\Providers\EnvClientServiceProvider'];
+        return ["Lionix\EnvClient\Providers\EnvClientServiceProvider"];
     }
 
     protected function getEnvironmentSetUp($app)
