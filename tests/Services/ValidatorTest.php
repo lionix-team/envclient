@@ -1,6 +1,6 @@
 <?php
 
-namespace Lionix\EnvClient\Tests\Unit;
+namespace Lionix\EnvClient\Tests\Services;
 
 use Lionix\EnvClient\Tests\TestCase;
 use Lionix\EnvClient\Tests\ValidatorWithRules;
