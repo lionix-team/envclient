@@ -1,5 +1,5 @@
 
-# EnvClient for Laravel 6+
+# EnvClient for Laravel
 Manage and validate environmental variables with artisan console commands, environmental rules and facades
 
 

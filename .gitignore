@@ -1,4 +1,5 @@
 /vendor
+/.history
 .phpunit.result.cache
 .env
 composer.lock

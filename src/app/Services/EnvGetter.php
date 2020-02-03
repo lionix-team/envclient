@@ -9,6 +9,7 @@ class EnvGetter implements EnvGetterInterface
 {
     /**
      * Wrap Illuminate\Support\Env get method
+     * or env function value
      *
      * @param string $key
      * 
@@ -16,7 +17,8 @@ class EnvGetter implements EnvGetterInterface
      */
     public function get(string $key)
     {
-        return Env::get($key);
+        return class_exists(Env::class) 
+            ? Env::get($key) : env($key);
     }
 
     /**
@@ -51,7 +53,7 @@ class EnvGetter implements EnvGetterInterface
     public function has(string $key) : bool
     {
         return preg_match(
-            "/^".preg_quote($key)."=[^\r\n]*/m", 
+            "/^".preg_quote($key)."=[^\r\n]*/m",
             file_get_contents(app()->environmentFilePath())
         );
     }
