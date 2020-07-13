@@ -2,7 +2,7 @@
 
 namespace App\Env;
 
-use Lionix\EnvValidator;
+use Lionix\EnvClient\Services\EnvValidator;
 
 class BaseEnvValidationRules extends EnvValidator
 {
