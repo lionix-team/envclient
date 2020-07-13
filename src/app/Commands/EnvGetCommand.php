@@ -3,7 +3,7 @@
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
-use Lionix\EnvClient\Services\EnvClient;
+use Lionix\EnvClient\Interfaces\EnvClientInterface;
 
 class EnvGetCommand extends Command
 {
@@ -12,14 +12,14 @@ class EnvGetCommand extends Command
      *
      * @var string
      */
-    protected $signature = "env:get {key}";
+    protected $signature = 'env:get {key}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Print .env variable";
+    protected $description = 'Print .env variable';
 
     /**
      * Create a new command instance.
@@ -36,11 +36,17 @@ class EnvGetCommand extends Command
      *
      * @return void
      */
-    public function handle()
+    public function handle(EnvClientInterface $client)
     {
-        $client = new EnvClient();
-        $key = $this->argument("key");
-        return !is_null($result = $client->get($key)) ?
-            $this->info($result) : $this->error("No {$key} variable found!");
+        $key = $this->argument('key');
+
+        $result = $client->get($key);
+
+        if (!$result) {
+            $this->error('No ' . $key . ' variable found!');
+            return 0;
+        }
+
+        return $this->info($result);
     }
 }

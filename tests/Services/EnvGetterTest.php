@@ -2,8 +2,8 @@
 
 namespace Lionix\EnvClient\Tests\Services;
 
-use Lionix\EnvClient\Tests\TestCase;
 use Lionix\EnvClient\Services\EnvGetter;
+use Lionix\EnvClient\Tests\TestCase;
 
 class EnvGetterTest extends TestCase
 {

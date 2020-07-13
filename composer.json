@@ -1,7 +1,14 @@
 {
-    "name": "lionix/envclient",
+    "name": "lionix/envclient2",
     "description": "Laravel environment client and console commands.",
-    "keywords": ["laravel", "env", "dotenv", "environment", "validation", "lionix"],
+    "keywords": [
+        "laravel",
+        "env",
+        "dotenv",
+        "environment",
+        "validation",
+        "lionix"
+    ],
     "license": "MIT",
     "require": {
         "php": "^7.1",

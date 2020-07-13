@@ -2,22 +2,22 @@
 
 namespace Lionix\EnvClient\Interfaces;
 
-interface EnvGetterInterface 
+interface EnvGetterInterface
 {
     /**
      * Check if value exists
      *
      * @param string $key
-     * 
+     *
      * @return bool
      */
-    public function has(string $key) : bool;
+    public function has(string $key): bool;
 
     /**
      * Get single env variable value
      *
      * @param string $key
-     * 
+     *
      * @return mixed
      */
     public function get(string $key);
@@ -27,5 +27,5 @@ interface EnvGetterInterface
      *
      * @return array
      */
-    public function all() : array;
+    public function all(): array;
 }

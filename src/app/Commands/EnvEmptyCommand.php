@@ -3,7 +3,7 @@
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
-use Lionix\EnvClient\Services\EnvClient;
+use Lionix\EnvClient\Interfaces\EnvClientInterface;
 
 class EnvEmptyCommand extends Command
 {
@@ -12,14 +12,14 @@ class EnvEmptyCommand extends Command
      *
      * @var string
      */
-    protected $signature = "env:empty";
+    protected $signature = 'env:empty';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Print empty .env variables";
+    protected $description = 'Print empty .env variables';
 
     /**
      * Create a new command instance.
@@ -36,18 +36,19 @@ class EnvEmptyCommand extends Command
      *
      * @return void
      */
-    public function handle()
+    public function handle(EnvClientInterface $client)
     {
-        $client = new EnvClient();
         $noEmptyValues = true;
+
         foreach ($client->all() as $key => $value) {
-            if ($value == "") {
+            if ($value == '') {
                 $noEmptyValues = false;
-                $this->warn("{$key} variable is empty!");
+                $this->warn($key . ' variable is empty!');
             }
         }
+
         if ($noEmptyValues) {
-            $this->info("All .env variables are set!");
+            $this->info('All .env variables are set!');
         }
     }
 }

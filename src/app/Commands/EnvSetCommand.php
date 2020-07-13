@@ -3,7 +3,7 @@
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
-use Lionix\EnvClient\Services\EnvClient;
+use Lionix\EnvClient\Interfaces\EnvClientInterface;
 
 class EnvSetCommand extends Command
 {
@@ -12,14 +12,14 @@ class EnvSetCommand extends Command
      *
      * @var string
      */
-    protected $signature = "env:set {key} {value}";
+    protected $signature = 'env:set {key} {value}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Set .env variable";
+    protected $description = 'Set .env variable';
 
     /**
      * Create a new command instance.
@@ -32,32 +32,35 @@ class EnvSetCommand extends Command
     }
 
     /**
-     * Set .env variable after checking its value by all 
+     * Set .env variable after checking its value by all
      * defined global validators in env.php config file at validators key
      *
      * @return void
      */
-    public function handle()
+    public function handle(EnvClientInterface $client)
     {
-        $client = new EnvClient();
-        $key = strtoupper($this->argument("key"));
-        $value = $this->argument("value");
-        $validators = config("env.rules", []);
+        $key = strtoupper($this->argument('key'));
+
+        $value = $this->argument('value');
+
+        $validators = config('env.rules', []);
+
         if (count($validators)) {
             foreach ($validators as $classname) {
                 $validator = new $classname();
                 $client
                     ->useValidator($validator)
-                    ->validate([ $key => $value ]);
+                    ->validate([$key => $value]);
             }
         }
+
         if ($client->errors()->has($key)) {
-            foreach($client->errors()->get($key) as $err){
+            foreach ($client->errors()->get($key) as $err) {
                 $this->error($err);
             }
         } else {
-            $client->update([ $key => $value ]);
-            $this->info("{$key} successfully set!");
+            $client->update([$key => $value]);
+            $this->info($key . ' successfully set!');
         }
     }
 }

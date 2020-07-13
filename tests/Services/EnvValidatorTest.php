@@ -2,11 +2,11 @@
 
 namespace Lionix\EnvClient\Tests\Services;
 
+use Illuminate\Support\MessageBag;
 use Lionix\EnvClient\Tests\TestCase;
 use Lionix\EnvClient\Tests\ValidatorWithRules;
-use Illuminate\Support\MessageBag;
 
-class ValidatorTest extends TestCase
+class EnvValidatorTest extends TestCase
 {
     /**
      * Testing errors merging
@@ -18,9 +18,9 @@ class ValidatorTest extends TestCase
         $validator = new ValidatorWithRules();
         $this->assertTrue($validator->errors()->isEmpty());
         $validator->mergeErrors(
-            (new MessageBag())->add("APP_NAME", "Test message!")
+            (new MessageBag())->add('APP_NAME', 'Test message!')
         );
-        $this->assertTrue($validator->errors()->has("APP_NAME"));
+        $this->assertTrue($validator->errors()->has('APP_NAME'));
     }
 
     /**
@@ -31,11 +31,13 @@ class ValidatorTest extends TestCase
     public function testValidationPasses()
     {
         $validator = new ValidatorWithRules();
+
         $this->assertTrue($validator->validate([
-            "APP_NAME" => "Hello World!",
-            "NUMERIC_VALUE" => 12,
-            "BOOLEAN_VALUE" => false
+            'APP_NAME' => 'Hello World!',
+            'NUMERIC_VALUE' => 12,
+            'BOOLEAN_VALUE' => false,
         ]));
+
         $this->assertTrue($validator->errors()->isEmpty());
     }
 
@@ -47,17 +49,21 @@ class ValidatorTest extends TestCase
     public function testValidationFails()
     {
         $validator = new ValidatorWithRules();
+
         $this->assertFalse($validator->validate([
-            "APP_NAME" => "Th",
-            "BOOLEAN_VALUE" => true
+            'APP_NAME' => 'Th',
+            'BOOLEAN_VALUE' => true,
         ]));
-        $this->assertTrue($validator->errors()->has("APP_NAME"));
-        
+
+        $this->assertTrue($validator->errors()->has('APP_NAME'));
+
         $validator = new ValidatorWithRules();
+
         $this->assertFalse($validator->validate([
-            "APP_NAME" => "Correct",
-            "NUMERIC_VALUE" => "NaN"
+            'APP_NAME' => 'Correct',
+            'NUMERIC_VALUE' => 'NaN',
         ]));
-        $this->assertTrue($validator->errors()->has("NUMERIC_VALUE"));
+
+        $this->assertTrue($validator->errors()->has('NUMERIC_VALUE'));
     }
 }

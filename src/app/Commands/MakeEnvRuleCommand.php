@@ -12,57 +12,57 @@ class MakeEnvRuleCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $signature = "make:envrule {name}";
+    protected $signature = 'make:envrule {name}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Create a new .env validation rules";
+    protected $description = 'Create a new .env validation rules';
 
-	/**
-	 * The type of class being generated.
-	 *
-	 * @var string
-	 */
-    protected $type = "Environment Rule";
-    
+    /**
+     * The type of class being generated.
+     *
+     * @var string
+     */
+    protected $type = 'Environment Rule';
+
     /**
      * Replace the class name for the given stub.
      *
      * @param  string  $stub
      * @param  string  $name
-     * 
+     *
      * @return string
      */
     protected function replaceClass($stub, $name)
     {
         $stub = parent::replaceClass($stub, $name);
-        return str_replace("BaseEnvValidationRules", $this->argument("name"), $stub);
+        return str_replace('BaseEnvValidationRules', $this->argument('name'), $stub);
     }
 
-	/**
-	 * Get the stub file for the generator.
-	 *
-	 * @return string
-	 */
-	protected function getStub()
-	{
-		return dirname(__DIR__, 2)."/stubs/BaseEnvValidationRules.stub";
+    /**
+     * Get the stub file for the generator.
+     *
+     * @return string
+     */
+    protected function getStub()
+    {
+        return dirname(__DIR__, 2) . '/stubs/BaseEnvValidationRules.stub';
     }
-    
-	/**
-	 * Get the default namespace for the class.
-	 *
-	 * @param  string  $rootNamespace
-     * 
-	 * @return string
-	 */
-	protected function getDefaultNamespace($rootNamespace)
-	{
-		return $rootNamespace."\Env";
-	}
+
+    /**
+     * Get the default namespace for the class.
+     *
+     * @param  string  $rootNamespace
+     *
+     * @return string
+     */
+    protected function getDefaultNamespace($rootNamespace)
+    {
+        return $rootNamespace . '\Env';
+    }
 
     /**
      * Get the console command arguments.
@@ -72,7 +72,7 @@ class MakeEnvRuleCommand extends GeneratorCommand
     protected function getArguments()
     {
         return [
-            ["name", InputArgument::REQUIRED, "The name of the .env rule."],
+            ['name', InputArgument::REQUIRED, 'The name of the .env rule.'],
         ];
     }
 }

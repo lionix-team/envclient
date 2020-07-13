@@ -3,7 +3,8 @@
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
-use Lionix\EnvClient\Services\EnvClient;
+use Illuminate\Contracts\Foundation\Application;
+use Lionix\EnvClient\Interfaces\EnvClientInterface;
 
 class EnvCheckCommand extends Command
 {
@@ -12,14 +13,14 @@ class EnvCheckCommand extends Command
      *
      * @var string
      */
-    protected $signature = "env:check";
+    protected $signature = 'env:check';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Apply .env global validation rules";
+    protected $description = 'Apply .env global validation rules';
 
     /**
      * Create a new command instance.
@@ -38,25 +39,24 @@ class EnvCheckCommand extends Command
      *
      * @return void
      */
-    public function handle()
+    public function handle(Application $app, EnvClientInterface $client)
     {
-        $validators = config("env.rules", []);
+        $validators = config('env.rules', []);
         if (count($validators)) {
-            $client = new EnvClient();
             foreach ($validators as $classname) {
                 $client
-                    ->useValidator(new $classname())
+                    ->useValidator($app->make($classname))
                     ->validate($client->all());
             }
             if ($client->errors()->isEmpty()) {
-                $this->info("All .env variables are valid!");
+                $this->info('All .env variables are valid!');
             } else {
                 foreach ($client->errors()->all() as $err) {
                     $this->error($err);
                 }
             }
         } else {
-            $this->error("No global validation rules provided!");
+            $this->error('No global validation rules provided!');
         }
     }
 }
