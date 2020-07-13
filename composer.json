@@ -1,5 +1,5 @@
 {
-    "name": "lionix/envclient2",
+    "name": "lionix/envclient",
     "description": "Laravel environment client and console commands.",
     "keywords": [
         "laravel",
