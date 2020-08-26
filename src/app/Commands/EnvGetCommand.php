@@ -22,19 +22,11 @@ class EnvGetCommand extends Command
     protected $description = 'Print .env variable';
 
     /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
      * Print .env variable
      *
-     * @return void
+     * @param \Lionix\EnvClient\Interfaces\EnvClientInterface $client
+     *
+     * @return int
      */
     public function handle(EnvClientInterface $client)
     {
@@ -44,9 +36,10 @@ class EnvGetCommand extends Command
 
         if (!$result) {
             $this->error('No ' . $key . ' variable found!');
-            return 0;
+            return 1;
         }
 
-        return $this->info($result);
+        $this->info($result);
+        return 0;
     }
 }

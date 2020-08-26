@@ -22,19 +22,11 @@ class EnvEmptyCommand extends Command
     protected $description = 'Print empty .env variables';
 
     /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
      * Print .env empty variables
      *
-     * @return void
+     * @param \Lionix\EnvClient\Interfaces\EnvClientInterface $client
+     *
+     * @return int
      */
     public function handle(EnvClientInterface $client)
     {
@@ -50,5 +42,7 @@ class EnvEmptyCommand extends Command
         if ($noEmptyValues) {
             $this->info('All .env variables are set!');
         }
+
+        return 0;
     }
 }
