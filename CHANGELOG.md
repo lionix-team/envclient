@@ -58,5 +58,5 @@ A modernization release targeting current PHP and Laravel versions. See the
 
 - PHP 8 support, Laravel 5.8+ support and the initial release.
 
-[2.0.0]: https://github.com/lionix-team/envclient/compare/1.1.3...v2.0.0
+[2.0.0]: https://github.com/lionix-team/envclient/compare/1.1.3...2.0.0
 [1.1.3]: https://github.com/lionix-team/envclient/releases/tag/1.1.3
