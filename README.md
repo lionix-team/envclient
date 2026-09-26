@@ -33,9 +33,11 @@ The service provider is auto-discovered.
 | `env:set {key} {value}`          | Set a variable if it passes the configured validation rules        |
 | `env:check`                      | Validate all variables against the configured rules                |
 | `env:empty`                      | List the variables that have no value                              |
+| `env:generate [--force] [--dry-run]` | Fill in variables provided by the configured generators        |
 | `make:envrule {name} [--force]`  | Create a new validation rules class in `app/Env`                   |
+| `make:envgenerator {name} [--force]` | Create a new generator class in `app/Env`                      |
 
-`env:get`, `env:set` and `env:check` return a non-zero exit code on failure.
+`env:get`, `env:set`, `env:check` and `env:generate` return a non-zero exit code on failure.
 
 ## Basic usage
 
@@ -136,6 +138,61 @@ Then register them in `config/env.php`:
 
 Rule classes are resolved through the service container, so constructor injection is supported.
 To customize the generated class, publish the stub with `php artisan vendor:publish --tag=envclient-stubs`.
+
+## Generating variables on deployment
+
+Instead of asking someone to edit the `.env` file on every server, describe the variables your
+application needs in generator classes and run `env:generate` as part of your deployment.
+
+```bash
+php artisan make:envgenerator DeploymentEnv
+```
+
+`app/Env/DeploymentEnv.php`
+
+```php
+namespace App\Env;
+
+use Illuminate\Support\Str;
+use Lionix\EnvClient\Services\EnvGenerator;
+
+class DeploymentEnv extends EnvGenerator
+{
+    public function values(): array
+    {
+        return [
+            'QUEUE_CONNECTION' => 'redis',
+            'SESSION_DRIVER' => 'redis',
+            'APP_KEY' => fn () => 'base64:'.base64_encode(random_bytes(32)),
+            'WEBHOOK_SECRET' => fn () => Str::random(40),
+        ];
+    }
+}
+```
+
+Register it in `config/env.php`:
+
+```php
+'generators' => [
+    \App\Env\DeploymentEnv::class,
+],
+```
+
+Then run it on deployment:
+
+```bash
+php artisan env:generate            # fill in missing or empty variables only
+php artisan env:generate --dry-run  # show what would be written
+php artisan env:generate --force    # overwrite existing values too
+```
+
+- By default only variables that are missing or empty are written, so values already configured on the
+  server (in the `.env` file or the real environment) are never overwritten. Run it on every deployment.
+- Closures are called only when their variable is actually written, so secrets are generated once.
+  They are resolved through the service container, so they may type-hint dependencies.
+- The values are validated against your `env.rules` classes first. If any of them is invalid, nothing is
+  written and the command exits with a non-zero code.
+- Generators are resolved through the service container and applied in order; later generators win.
 
 ## Using the client in code
 

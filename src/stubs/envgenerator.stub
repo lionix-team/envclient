@@ -1,0 +1,22 @@
+<?php
+
+namespace {{ namespace }};
+
+use Lionix\EnvClient\Services\EnvGenerator;
+
+class {{ class }} extends EnvGenerator
+{
+    /**
+     * Environment variables to fill in with `php artisan env:generate`.
+     *
+     * Closures are only called when the variable is written.
+     *
+     * @return array<string, mixed>
+     */
+    public function values(): array
+    {
+        return [
+            //
+        ];
+    }
+}
