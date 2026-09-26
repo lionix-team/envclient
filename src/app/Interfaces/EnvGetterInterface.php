@@ -1,31 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Interfaces;
 
 interface EnvGetterInterface
 {
     /**
-     * Check if value exists
-     *
-     * @param string $key
-     *
-     * @return bool
+     * Determine if the environment file contains the given key.
      */
     public function has(string $key): bool;
 
     /**
-     * Get single env variable value
-     *
-     * @param string $key
-     *
-     * @return mixed
+     * Get the runtime value of an environment variable.
      */
-    public function get(string $key);
+    public function get(string $key): mixed;
 
     /**
-     * Get all env variables
+     * Get all variables declared in the environment file.
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function all(): array;
 }

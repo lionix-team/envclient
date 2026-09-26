@@ -1,34 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Tests\Services;
 
 use Illuminate\Support\MessageBag;
+use Lionix\EnvClient\Tests\Fixtures\ValidatorWithRules;
 use Lionix\EnvClient\Tests\TestCase;
-use Lionix\EnvClient\Tests\ValidatorWithRules;
 
 class EnvValidatorTest extends TestCase
 {
-    /**
-     * Testing errors merging
-     *
-     * @return void
-     */
-    public function testMergeErrors()
+    public function test_merge_errors(): void
     {
         $validator = new ValidatorWithRules();
+
         $this->assertTrue($validator->errors()->isEmpty());
-        $validator->mergeErrors(
-            (new MessageBag())->add('APP_NAME', 'Test message!')
-        );
+
+        $validator->mergeErrors((new MessageBag())->add('APP_NAME', 'Test message!'));
+
         $this->assertTrue($validator->errors()->has('APP_NAME'));
     }
 
-    /**
-     * Testing sample validator pass
-     *
-     * @return void
-     */
-    public function testValidationPasses()
+    public function test_validation_passes(): void
     {
         $validator = new ValidatorWithRules();
 
@@ -41,12 +34,7 @@ class EnvValidatorTest extends TestCase
         $this->assertTrue($validator->errors()->isEmpty());
     }
 
-    /**
-     * Testing sample validator fail
-     *
-     * @return void
-     */
-    public function testValidationFails()
+    public function test_validation_fails(): void
     {
         $validator = new ValidatorWithRules();
 
@@ -61,9 +49,19 @@ class EnvValidatorTest extends TestCase
 
         $this->assertFalse($validator->validate([
             'APP_NAME' => 'Correct',
+            'BOOLEAN_VALUE' => true,
             'NUMERIC_VALUE' => 'NaN',
         ]));
 
         $this->assertTrue($validator->errors()->has('NUMERIC_VALUE'));
+    }
+
+    public function test_error_messages_use_the_variable_name(): void
+    {
+        $validator = new ValidatorWithRules();
+
+        $validator->validate(['APP_NAME' => 'Th', 'BOOLEAN_VALUE' => true]);
+
+        $this->assertStringContainsString('APP_NAME', $validator->errors()->first('APP_NAME'));
     }
 }

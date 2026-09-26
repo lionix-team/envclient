@@ -1,52 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
 use Lionix\EnvClient\Interfaces\EnvClientInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand(name: 'env:get')]
 class EnvGetCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'env:get {key}';
+    protected $signature = 'env:get {key : The environment variable name}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Print .env variable';
+    protected $description = 'Print the value of an environment variable';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function handle(EnvClientInterface $client): int
     {
-        parent::__construct();
-    }
+        $key = (string) $this->argument('key');
 
-    /**
-     * Print .env variable
-     *
-     * @return void
-     */
-    public function handle(EnvClientInterface $client)
-    {
-        $key = $this->argument('key');
+        if (! $client->has($key)) {
+            $this->components->error("Environment variable [{$key}] not found.");
 
-        $result = $client->get($key);
-
-        if (!$result) {
-            $this->error('No ' . $key . ' variable found!');
-            return 0;
+            return self::FAILURE;
         }
 
-        return $this->info($result);
+        $this->line(match ($value = $client->get($key)) {
+            true => 'true',
+            false => 'false',
+            null => 'null',
+            default => (string) $value,
+        });
+
+        return self::SUCCESS;
     }
 }

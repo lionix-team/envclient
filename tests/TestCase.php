@@ -1,38 +1,54 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Tests;
 
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Lionix\EnvClient\Providers\EnvClientServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
-class TestCase extends BaseTestCase
+abstract class TestCase extends BaseTestCase
 {
-    protected function getPackageProviders($app)
+    protected string $envDirectory;
+
+    protected function getPackageProviders($app): array
     {
         return [
             EnvClientServiceProvider::class,
         ];
     }
 
-    protected function getEnvironmentSetUp($app)
+    protected function defineEnvironment($app): void
     {
-        $root = dirname(__DIR__, 1);
+        $this->envDirectory = sys_get_temp_dir().'/envclient-'.bin2hex(random_bytes(6));
 
-        if (!file_exists($root . '/.env') && file_exists($root . '/.env.testing')) {
-            copy($root . '/.env.testing', $root . '/.env');
-        }
+        mkdir($this->envDirectory);
 
-        $app->useEnvironmentPath($root);
+        copy(dirname(__DIR__).'/.env.testing', $this->envDirectory.'/.env');
+
+        $app->useEnvironmentPath($this->envDirectory);
 
         $app->bootstrapWith([LoadEnvironmentVariables::class]);
 
-        parent::getEnvironmentSetUp($app);
+        $app['config']->set('env.rules', []);
     }
 
-    public function __destruct()
+    protected function tearDown(): void
     {
-        $root = dirname(__DIR__, 1);
-        !file_exists($root . '/.env') || unlink($root . '/.env');
+        parent::tearDown();
+
+        @unlink($this->envDirectory.'/.env');
+        @rmdir($this->envDirectory);
+    }
+
+    protected function envContents(): string
+    {
+        return (string) file_get_contents($this->envDirectory.'/.env');
+    }
+
+    protected function writeEnv(string $contents): void
+    {
+        file_put_contents($this->envDirectory.'/.env', $contents);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Interfaces;
 
 use Illuminate\Support\MessageBag;
@@ -7,34 +9,26 @@ use Illuminate\Support\MessageBag;
 interface EnvValidatorInterface
 {
     /**
-     * Get validation rules
+     * Get the validation rules.
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function rules(): array;
 
     /**
-     * Check if variables are valid
+     * Determine if the given values pass the validation rules.
      *
-     * @param array $values
-     *
-     * @return boolean
+     * @param  array<string, mixed>  $values
      */
     public function validate(array $values): bool;
 
     /**
-     * Get validation errors MessageBag
-     *
-     * @return Illuminate\Support\MessageBag
+     * Get the validation errors.
      */
     public function errors(): MessageBag;
 
     /**
-     * Merge current errors with given ones
-     *
-     * @param Illuminate\Support\MessageBag $errors
-     *
-     * @return void
+     * Merge the given errors into the current ones.
      */
     public function mergeErrors(MessageBag $errors): void;
 }

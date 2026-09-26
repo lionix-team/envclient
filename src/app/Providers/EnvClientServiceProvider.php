@@ -1,8 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Lionix\EnvClient\Commands\EnvCheckCommand;
+use Lionix\EnvClient\Commands\EnvEmptyCommand;
+use Lionix\EnvClient\Commands\EnvGetCommand;
+use Lionix\EnvClient\Commands\EnvSetCommand;
+use Lionix\EnvClient\Commands\MakeEnvRuleCommand;
 use Lionix\EnvClient\Interfaces\EnvClientInterface;
 use Lionix\EnvClient\Interfaces\EnvGetterInterface;
 use Lionix\EnvClient\Interfaces\EnvSetterInterface;
@@ -15,35 +22,40 @@ use Lionix\EnvClient\Services\EnvValidator;
 class EnvClientServiceProvider extends ServiceProvider
 {
     /**
-     * Publish default .env global ruleset and register commands:
-     * - env:check
-     * - env:empty
-     * - env:get
-     * - env:set
-     * - make:envrule
+     * All of the container bindings that should be registered.
      *
-     * @return void
+     * @var array<class-string, class-string>
      */
-    public function boot()
+    public array $bindings = [
+        EnvGetterInterface::class => EnvGetter::class,
+        EnvSetterInterface::class => EnvSetter::class,
+        EnvValidatorInterface::class => EnvValidator::class,
+        EnvClientInterface::class => EnvClient::class,
+    ];
+
+    public function boot(): void
     {
-        $this->publishes([
-            dirname(__DIR__, 2) . '/config/env.php' => config_path('env.php'),
-            dirname(__DIR__, 2) . '/stubs/BaseEnvValidationRules.stub' => app_path('Env/BaseEnvValidationRules.php'),
-        ], 'config');
-
-        $this->app->bind(EnvGetterInterface::class, EnvGetter::class);
-        $this->app->bind(EnvSetterInterface::class, EnvSetter::class);
-        $this->app->bind(EnvValidatorInterface::class, EnvValidator::class);
-        $this->app->bind(EnvClientInterface::class, EnvClient::class);
-
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                \Lionix\EnvClient\Commands\EnvCheckCommand::class,
-                \Lionix\EnvClient\Commands\EnvEmptyCommand::class,
-                \Lionix\EnvClient\Commands\EnvGetCommand::class,
-                \Lionix\EnvClient\Commands\EnvSetCommand::class,
-                \Lionix\EnvClient\Commands\MakeEnvRuleCommand::class,
-            ]);
+        if (! $this->app->runningInConsole()) {
+            return;
         }
+
+        $root = dirname(__DIR__, 2);
+
+        $this->publishes([
+            $root.'/config/env.php' => config_path('env.php'),
+            $root.'/stubs/BaseEnvValidationRules.stub' => app_path('Env/BaseEnvValidationRules.php'),
+        ], ['envclient', 'envclient-config', 'config']);
+
+        $this->publishes([
+            $root.'/stubs/envrule.stub' => base_path('stubs/envrule.stub'),
+        ], ['envclient-stubs', 'stubs']);
+
+        $this->commands([
+            EnvCheckCommand::class,
+            EnvEmptyCommand::class,
+            EnvGetCommand::class,
+            EnvSetCommand::class,
+            MakeEnvRuleCommand::class,
+        ]);
     }
 }
