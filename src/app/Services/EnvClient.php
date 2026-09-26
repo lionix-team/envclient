@@ -6,9 +6,11 @@ namespace Lionix\EnvClient\Services;
 
 use Illuminate\Support\MessageBag;
 use Lionix\EnvClient\Interfaces\EnvClientInterface;
+use Lionix\EnvClient\Interfaces\EnvForgetterInterface;
 use Lionix\EnvClient\Interfaces\EnvGetterInterface;
 use Lionix\EnvClient\Interfaces\EnvSetterInterface;
 use Lionix\EnvClient\Interfaces\EnvValidatorInterface;
+use LogicException;
 
 class EnvClient implements EnvClientInterface
 {
@@ -16,8 +18,7 @@ class EnvClient implements EnvClientInterface
         protected EnvGetterInterface $getter,
         protected EnvSetterInterface $setter,
         protected EnvValidatorInterface $validator,
-    ) {
-    }
+    ) {}
 
     public function useGetter(EnvGetterInterface $getter): static
     {
@@ -79,6 +80,29 @@ class EnvClient implements EnvClientInterface
             $this->setter->set($values);
             $this->setter->save();
         }
+
+        return $this;
+    }
+
+    /**
+     * Remove the given variables from the environment file.
+     *
+     * @param  list<string>  $keys
+     *
+     * @throws LogicException
+     */
+    public function forget(array $keys): static
+    {
+        if (! $this->setter instanceof EnvForgetterInterface) {
+            throw new LogicException(sprintf(
+                'The environment setter [%s] does not implement [%s].',
+                $this->setter::class,
+                EnvForgetterInterface::class,
+            ));
+        }
+
+        $this->setter->forget($keys);
+        $this->setter->save();
 
         return $this;
     }

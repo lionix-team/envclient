@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Lionix\EnvClient\Tests\Commands;
 
 use Dotenv\Dotenv;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Lionix\EnvClient\Events\EnvironmentVariablesGenerated;
 use Lionix\EnvClient\Tests\Fixtures\DeploymentGenerator;
 use Lionix\EnvClient\Tests\Fixtures\NotAValidator;
 use Lionix\EnvClient\Tests\Fixtures\ValidatorWithRules;
@@ -60,6 +62,32 @@ class EnvGenerateCommandTest extends TestCase
         $this->assertStringContainsString("GENERATED_SECRET=keep\n", $this->envContents());
     }
 
+    public function test_output_masks_secrets_and_dispatches_event(): void
+    {
+        config()->set('env.generators', [DeploymentGenerator::class]);
+
+        Event::fake([EnvironmentVariablesGenerated::class]);
+
+        $this->artisan('env:generate')
+            ->expectsOutputToContain('GENERATED_SECRET ********')
+            ->doesntExpectOutputToContain('secret value')
+            ->assertSuccessful();
+
+        Event::assertDispatched(
+            EnvironmentVariablesGenerated::class,
+            fn (EnvironmentVariablesGenerated $event): bool => $event->keys === ['EMPTY_VALUE', 'GENERATED_SECRET'],
+        );
+    }
+
+    public function test_reveal_prints_secrets(): void
+    {
+        config()->set('env.generators', [DeploymentGenerator::class]);
+
+        $this->artisan('env:generate', ['--dry-run' => true, '--reveal' => true])
+            ->expectsOutputToContain('secret value')
+            ->assertSuccessful();
+    }
+
     public function test_dry_run_does_not_write(): void
     {
         config()->set('env.generators', [DeploymentGenerator::class]);
@@ -79,7 +107,8 @@ class EnvGenerateCommandTest extends TestCase
         config()->set('env.generators', [DeploymentGenerator::class]);
         config()->set('env.rules', [ValidatorWithRules::class]);
 
-        $generator = new class extends DeploymentGenerator {
+        $generator = new class extends DeploymentGenerator
+        {
             public function values(): array
             {
                 return ['NUMERIC_VALUE' => 'NaN', 'OTHER' => 'ok'];

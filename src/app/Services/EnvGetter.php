@@ -6,46 +6,49 @@ namespace Lionix\EnvClient\Services;
 
 use Illuminate\Support\Env;
 use Lionix\EnvClient\Interfaces\EnvGetterInterface;
+use Lionix\EnvClient\Support\EnvironmentFile;
 
 class EnvGetter implements EnvGetterInterface
 {
     /**
-     * Matches a `KEY=value` (optionally `export KEY=value`) declaration line.
+     * @deprecated Use EnvironmentFile::LINE_PATTERN instead.
      */
-    public const LINE_PATTERN = '/^[ \t]*(?:export[ \t]+)?([A-Za-z_][A-Za-z0-9_.]*)[ \t]*=/m';
+    public const LINE_PATTERN = EnvironmentFile::LINE_PATTERN;
 
+    /**
+     * Get the value of the variable.
+     *
+     * Values come from the runtime environment when the targeted file is the one
+     * loaded at boot, otherwise (another file, or cached config) from the file itself.
+     */
     public function get(string $key): mixed
     {
-        return Env::get($key);
+        if (EnvironmentFile::isLoaded()) {
+            return Env::get($key);
+        }
+
+        return EnvironmentFile::cast(EnvironmentFile::parse(EnvironmentFile::read())[$key] ?? null);
     }
 
     public function all(): array
     {
-        preg_match_all(static::LINE_PATTERN, $this->contents(), $matches);
+        $contents = EnvironmentFile::read();
+        $keys = EnvironmentFile::keys($contents);
 
-        $variables = [];
-
-        foreach ($matches[1] as $key) {
-            $variables[$key] = $this->get($key);
+        if (EnvironmentFile::isLoaded()) {
+            return array_combine($keys, array_map(Env::get(...), $keys));
         }
 
-        return $variables;
+        $values = EnvironmentFile::parse($contents);
+
+        return array_combine($keys, array_map(
+            static fn (string $key): mixed => EnvironmentFile::cast($values[$key] ?? null),
+            $keys,
+        ));
     }
 
     public function has(string $key): bool
     {
-        $pattern = '/^[ \t]*(?:export[ \t]+)?'.preg_quote($key, '/').'[ \t]*=/m';
-
-        return preg_match($pattern, $this->contents()) === 1;
-    }
-
-    /**
-     * Read the environment file contents.
-     */
-    protected function contents(): string
-    {
-        $path = app()->environmentFilePath();
-
-        return is_file($path) ? (string) file_get_contents($path) : '';
+        return in_array($key, EnvironmentFile::keys(EnvironmentFile::read()), true);
     }
 }

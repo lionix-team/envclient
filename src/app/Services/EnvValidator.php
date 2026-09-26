@@ -35,7 +35,7 @@ class EnvValidator implements EnvValidatorInterface
 
     public function errors(): MessageBag
     {
-        return $this->errors ??= new MessageBag();
+        return $this->errors ??= new MessageBag;
     }
 
     public function mergeErrors(MessageBag $errors): void

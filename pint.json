@@ -1,0 +1,6 @@
+{
+    "preset": "laravel",
+    "notPath": [
+        "src/config/env.php"
+    ]
+}

@@ -36,3 +36,25 @@ jobs:
 
       - name: Run tests
         run: vendor/bin/phpunit
+
+  static-analysis:
+    runs-on: ubuntu-latest
+
+    name: Static analysis and code style
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      - name: Check code style
+        run: vendor/bin/pint --test
