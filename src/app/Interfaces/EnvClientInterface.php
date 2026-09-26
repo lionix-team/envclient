@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Interfaces;
 
 use Illuminate\Support\MessageBag;
@@ -7,106 +9,65 @@ use Illuminate\Support\MessageBag;
 interface EnvClientInterface
 {
     /**
-     * Setup default dependencies
-     *
-     * @return void
+     * Replace the getter dependency.
      */
-    public function __construct(
-        EnvGetterInterface $getter,
-        EnvSetterInterface $setter,
-        EnvValidatorInterface $validator
-    );
+    public function useGetter(EnvGetterInterface $getter): static;
 
     /**
-     * Change client getter dependency
-     *
-     * @param Lionix\EnvClient\Interfaces\EnvGetterInterface $getter
-     *
-     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
+     * Replace the setter dependency.
      */
-    public function useGetter(EnvGetterInterface $getter): EnvClientInterface;
+    public function useSetter(EnvSetterInterface $setter): static;
 
     /**
-     * Change client setter dependency
-     *
-     * @param Lionix\EnvClient\Interfaces\EnvGetterInterface $setter
-     *
-     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
+     * Replace the validator dependency, keeping the errors collected so far.
      */
-    public function useSetter(EnvSetterInterface $setter): EnvClientInterface;
+    public function useValidator(EnvValidatorInterface $validator): static;
 
     /**
-     * Change client validator dependency
+     * Get all variables declared in the environment file.
      *
-     * @param Lionix\EnvClient\Interfaces\EnvGetterInterface $validator
-     *
-     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
-     */
-    public function useValidator(EnvValidatorInterface $validator): EnvClientInterface;
-
-    /**
-     * Get all .env variables
-     *
-     * @return array
+     * @return array<string, mixed>
      */
     public function all(): array;
 
     /**
-     * Check if .env variable key exists
-     *
-     * @param string $key
-     *
-     * @return boolean
+     * Determine if the environment file contains the given key.
      */
     public function has(string $key): bool;
 
     /**
-     * Get .env variable file value by its key
-     *
-     * @param string $key
-     *
-     * @return mixed
+     * Get the runtime value of an environment variable.
      */
-    public function get(string $key);
+    public function get(string $key): mixed;
 
     /**
-     * Set .env variables using associative array
+     * Queue the given values to be saved if they pass validation.
      *
-     * @param array $values
-     *
-     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
+     * @param  array<string, scalar|\Stringable|null>  $values
      */
-    public function set(array $values): EnvClientInterface;
+    public function set(array $values): static;
 
     /**
-     * Save changes to .env file
-     *
-     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
+     * Write the queued values to the environment file.
      */
-    public function save(): EnvClientInterface;
+    public function save(): static;
 
     /**
-     * Set and update associative array values
+     * Validate, queue and save the given values in one step.
      *
-     * @param array $values
-     *
-     * @return Lionix\EnvClient\Interfaces\EnvClientInterface
+     * @param  array<string, scalar|\Stringable|null>  $values
      */
-    public function update(array $values): EnvClientInterface;
+    public function update(array $values): static;
 
     /**
-     * Validate associative array values
+     * Determine if the given values pass the current validator rules.
      *
-     * @param array $values
-     *
-     * @return boolean
+     * @param  array<string, mixed>  $values
      */
     public function validate(array $values): bool;
 
     /**
-     * Get all client errors during client lifetime
-     *
-     * @return MessageBag
+     * Get all validation errors collected during the client lifetime.
      */
     public function errors(): MessageBag;
 }

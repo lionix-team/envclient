@@ -1,6 +1,8 @@
 <?php
 
-namespace Lionix\EnvClient\Tests;
+declare(strict_types=1);
+
+namespace Lionix\EnvClient\Tests\Fixtures;
 
 use Lionix\EnvClient\Services\EnvValidator;
 

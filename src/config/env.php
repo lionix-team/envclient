@@ -2,16 +2,19 @@
 
 return [
 
-    /**
-     * Validation classes which contain environment rules
-     * applied by env artisan commands.
-     *
-     * Add your validation classes created by
-     * `php artisan make:envrule` command to apply their rules
-     *
-     * @var array
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Environment Validation Rules
+    |--------------------------------------------------------------------------
+    |
+    | Validator classes whose rules are applied by the `env:set` and
+    | `env:check` artisan commands. Generate new ones with the
+    | `php artisan make:envrule` command and register them here.
+    |
+    */
+
     'rules' => [
         \App\Env\BaseEnvValidationRules::class,
     ],
+
 ];

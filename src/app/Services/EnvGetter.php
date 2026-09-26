@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Services;
 
 use Illuminate\Support\Env;
@@ -8,56 +10,42 @@ use Lionix\EnvClient\Interfaces\EnvGetterInterface;
 class EnvGetter implements EnvGetterInterface
 {
     /**
-     * Wrap Illuminate\Support\Env get method
-     * or env function value
-     *
-     * @param string $key
-     *
-     * @return mixed
+     * Matches a `KEY=value` (optionally `export KEY=value`) declaration line.
      */
-    public function get(string $key)
+    public const LINE_PATTERN = '/^[ \t]*(?:export[ \t]+)?([A-Za-z_][A-Za-z0-9_.]*)[ \t]*=/m';
+
+    public function get(string $key): mixed
     {
-        return class_exists(Env::class)
-        ? Env::get($key) : env($key);
+        return Env::get($key);
     }
 
-    /**
-     * Get all variable keys from the file
-     * and map them with get method
-     *
-     * @return array
-     */
     public function all(): array
     {
-        $toReturn = [];
+        preg_match_all(static::LINE_PATTERN, $this->contents(), $matches);
 
-        $fp = fopen(app()->environmentFilePath(), 'r');
+        $variables = [];
 
-        if ($fp) {
-            while (($line = fgets($fp)) !== false) {
-                if (preg_match('/^(\w*)' . '=[^\r\n]*/m', $line)) {
-                    $key = strtok($line, '=');
-                    $toReturn[$key] = $this->get($key);
-                }
-            }
-            fclose($fp);
+        foreach ($matches[1] as $key) {
+            $variables[$key] = $this->get($key);
         }
 
-        return $toReturn;
+        return $variables;
+    }
+
+    public function has(string $key): bool
+    {
+        $pattern = '/^[ \t]*(?:export[ \t]+)?'.preg_quote($key, '/').'[ \t]*=/m';
+
+        return preg_match($pattern, $this->contents()) === 1;
     }
 
     /**
-     * Check if env file has the given key
-     *
-     * @param string $key
-     *
-     * @return boolean
+     * Read the environment file contents.
      */
-    public function has(string $key): bool
+    protected function contents(): string
     {
-        return preg_match(
-            '/^' . preg_quote($key) . '=[^\r\n]*/m',
-            file_get_contents(app()->environmentFilePath())
-        );
+        $path = app()->environmentFilePath();
+
+        return is_file($path) ? (string) file_get_contents($path) : '';
     }
 }

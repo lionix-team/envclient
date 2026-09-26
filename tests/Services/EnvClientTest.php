@@ -1,85 +1,91 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Tests\Services;
 
+use Lionix\EnvClient\Facades\EnvClient as EnvClientFacade;
+use Lionix\EnvClient\Interfaces\EnvClientInterface;
 use Lionix\EnvClient\Services\EnvClient;
-use Lionix\EnvClient\Tests\EnvGetterMock;
-use Lionix\EnvClient\Tests\EnvSetterMock;
+use Lionix\EnvClient\Services\EnvGetter;
+use Lionix\EnvClient\Services\EnvSetter;
+use Lionix\EnvClient\Tests\Fixtures\ValidatorWithRules;
 use Lionix\EnvClient\Tests\TestCase;
-use Lionix\EnvClient\Tests\ValidatorWithRules;
-use ReflectionObject;
+use ReflectionProperty;
 
 class EnvClientTest extends TestCase
 {
-    /**
-     * Test resolved by the container
-     *
-     * @return void
-     */
-    public function testResolvedByTheContainer()
+    public function test_resolved_by_the_container(): void
     {
-        app()->make(EnvClient::class);
-
-        $this->assertTrue(true);
+        $this->assertInstanceOf(EnvClient::class, $this->app->make(EnvClientInterface::class));
+        $this->assertInstanceOf(EnvClient::class, $this->app->make(EnvClient::class));
     }
 
-    /**
-     * Test use setter chaing getter.
-     *
-     * @return void
-     */
-    public function testUseGetter()
+    public function test_use_getter_setter_and_validator(): void
     {
-        $client = app()->make(EnvClient::class);
+        $client = $this->app->make(EnvClient::class);
 
-        $client->useGetter(new EnvGetterMock);
+        $getter = new EnvGetter();
+        $setter = new EnvSetter();
+        $validator = new ValidatorWithRules();
 
-        $ref = new ReflectionObject($client);
+        $this->assertSame($client, $client->useGetter($getter)->useSetter($setter)->useValidator($validator));
 
-        $getter = $ref->getProperty('getter');
-
-        $getter->setAccessible(true);
-
-        $this->assertInstanceOf(EnvGetterMock::class, $getter->getValue($client));
+        $this->assertSame($getter, (new ReflectionProperty($client, 'getter'))->getValue($client));
+        $this->assertSame($setter, (new ReflectionProperty($client, 'setter'))->getValue($client));
+        $this->assertSame($validator, (new ReflectionProperty($client, 'validator'))->getValue($client));
     }
 
-    /**
-     * Test use setter chaing setter.
-     *
-     * @return void
-     */
-    public function testUseSetter()
+    public function test_errors_are_kept_when_switching_validators(): void
     {
-        $client = app()->make(EnvClient::class);
+        $client = $this->app->make(EnvClient::class);
 
-        $client->useSetter(new EnvSetterMock);
+        $client->useValidator(new ValidatorWithRules())->validate(['APP_NAME' => 'x']);
+        $client->useValidator(new ValidatorWithRules());
 
-        $ref = new ReflectionObject($client);
-
-        $setter = $ref->getProperty('setter');
-
-        $setter->setAccessible(true);
-
-        $this->assertInstanceOf(EnvSetterMock::class, $setter->getValue($client));
+        $this->assertTrue($client->errors()->has('APP_NAME'));
+        $this->assertTrue($client->errors()->has('BOOLEAN_VALUE'));
     }
 
-    /**
-     * Test use setter chaing validator.
-     *
-     * @return void
-     */
-    public function testUseValidator()
+    public function test_update_saves_valid_values(): void
     {
-        $client = app()->make(EnvClient::class);
+        $client = $this->app->make(EnvClient::class)->useValidator(new ValidatorWithRules());
 
-        $client->useValidator(new ValidatorWithRules);
+        $client->update(['APP_NAME' => 'Updated', 'BOOLEAN_VALUE' => '1']);
 
-        $ref = new ReflectionObject($client);
+        $this->assertTrue($client->errors()->isEmpty());
+        $this->assertStringContainsString("APP_NAME=Updated\n", $this->envContents());
+    }
 
-        $validator = $ref->getProperty('validator');
+    public function test_update_skips_invalid_values(): void
+    {
+        $original = $this->envContents();
 
-        $validator->setAccessible(true);
+        $client = $this->app->make(EnvClient::class)->useValidator(new ValidatorWithRules());
 
-        $this->assertInstanceOf(ValidatorWithRules::class, $validator->getValue($client));
+        $client->update(['APP_NAME' => 'x', 'BOOLEAN_VALUE' => '1']);
+
+        $this->assertTrue($client->errors()->has('APP_NAME'));
+        $this->assertSame($original, $this->envContents());
+    }
+
+    public function test_set_then_save(): void
+    {
+        $client = $this->app->make(EnvClient::class);
+
+        $client->set(['FIRST' => '1'])->set(['SECOND' => '2'])->save();
+
+        $this->assertStringEndsWith("FIRST=1\nSECOND=2\n", $this->envContents());
+    }
+
+    public function test_facade(): void
+    {
+        $this->assertTrue(EnvClientFacade::has('APP_NAME'));
+        $this->assertSame('lionix/envclient', EnvClientFacade::get('APP_NAME'));
+
+        $client = EnvClientFacade::useValidator(new ValidatorWithRules())->update(['APP_NAME' => 'x']);
+
+        $this->assertTrue($client->errors()->has('APP_NAME'));
+        $this->assertTrue(EnvClientFacade::errors()->isEmpty(), 'Facade calls must not share state.');
     }
 }

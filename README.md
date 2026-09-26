@@ -1,330 +1,222 @@
 # EnvClient for Laravel
 
-Manage and validate environmental variables with artisan console commands, environmental rules and facades
+[![Tests](https://github.com/lionix-team/envclient/actions/workflows/tests.yml/badge.svg)](https://github.com/lionix-team/envclient/actions/workflows/tests.yml)
+[![Latest Version](https://img.shields.io/packagist/v/lionix/envclient.svg)](https://packagist.org/packages/lionix/envclient)
+[![License](https://img.shields.io/packagist/l/lionix/envclient.svg)](LICENSE.md)
+
+Read, write and validate your `.env` file with artisan commands, Laravel validation rules and a fluent client.
+
+- `php artisan env:set DB_CONNECTION mysql` — safely update a variable, validated against your rules
+- `php artisan env:check` — validate the whole `.env` file (non-zero exit code on failure, great for CI/CD)
+- `EnvClient::useValidator(new DatabaseEnvRules)->update([...])` — do the same from your code
+
+## Requirements
+
+| Package | PHP       | Laravel       |
+| ------- | --------- | ------------- |
+| 2.x     | 8.2 – 8.5 | 12.x, 13.x    |
+| 1.x     | 7.2 – 8.x | 5.8 – 8.x     |
 
 ## Installation
 
-```
+```bash
 composer require lionix/envclient
 ```
 
-## Breaking changes
-
-### From 1.0.0 to 1.1.0
-
-- To construct the `\Lionix\Envclient` use Laravel Service Container instead of plain construct.
+The service provider is auto-discovered.
 
 ## Artisan commands
 
-| Signature               | Description                                       |
-| ----------------------- | ------------------------------------------------- |
-| `env:get {key}`         | Prints .env variable value                        |
-| `env:set {key} {value}` | Sets .env variable if validation rules are passed |
-| `env:check`             | Check all env variables for validness             |
-| `env:empty`             | Print empty .env variables                        |
-| `make:envrule {name}`   | Create a new .env validation rules                |
+| Command                          | Description                                                        |
+| -------------------------------- | ------------------------------------------------------------------ |
+| `env:get {key}`                  | Print the value of a variable                                      |
+| `env:set {key} {value}`          | Set a variable if it passes the configured validation rules        |
+| `env:check`                      | Validate all variables against the configured rules                |
+| `env:empty`                      | List the variables that have no value                              |
+| `make:envrule {name} [--force]`  | Create a new validation rules class in `app/Env`                   |
+
+`env:get`, `env:set` and `env:check` return a non-zero exit code on failure.
 
 ## Basic usage
 
-Set an environment variable using `env:set` artisan command.
-
-```
-php artisan env:set EXAMPLE_ENV_VARIABLE 'example value'
+```bash
+php artisan env:set APP_NAME "My Application"
 ```
 
-The command will modify your environment file by replacing or adding the given key to it.
+The command replaces the variable if it exists or appends it to the end of the file. Values are
+quoted and escaped when needed (spaces, `#`, quotes, backslashes), so they are always read back correctly.
 
-### Validate environment variables
-
-If you want to apply validation rules to environmental variables before `env:set` command will modify the file you will have to publish command package configuration files.
-
-```
-php artisan vendor:publish --provider='Lionix\EnvClient\Providers\EnvClientServiceProvider' --tag='config'
+```bash
+php artisan env:get APP_NAME
+My Application
 ```
 
-The command will create `config/env.php`
+## Validation
 
-```php
-<?php
+### Publish the configuration
 
-return [
-
-    /**
-     * Validation classes which contain environment rules
-     * applied by env artisan commands.
-     *
-     * Add your validation classes created by
-     * `php artisan make:envrule` command to apply their rules
-     *
-     * @var array
-     */
-    'rules' => [
-        \App\Env\BaseEnvValidationRules::class
-    ]
-];
+```bash
+php artisan vendor:publish --tag=envclient
 ```
 
-and `app/Env/BaseEnvValidationRules.php`
-
-```php
-<?php
-
-namespace App\Env;
-
-use Lionix\EnvValidator;
-
-class BaseEnvValidationRules extends EnvValidator
-{
-    /**
-     * Validation rules that apply to the .env variables.
-     *
-     * @return array
-     */
-    public function rules() : array
-    {
-        return [
-            //
-        ];
-    }
-}
-```
-
-By adding validation rules into `rules` method return value you will apply them to `env:set` command.
-
-```php
-...
-public function rules() : array
-{
-    return [
-        'DB_CONNECTION' => 'required|in:mysql,sqlite'
-    ];
-}
-...
-```
-
-This way if you try to set an invalid value to the `DB_CONNECTION` variable with `env:set` command, the console will print out an error
-
-```
-$ php artisan env:set DB_CONNECTION SomeInvalidValue
-The selected DB_CONNECTION is invalid.
-```
-
-If your environment file was modified you can run `env:check` command which will check all variables for validness and print out the results.
-
-```
-$ php artisan env:check
-The selected DB_CONNECTION is invalid.
-```
-
-## Create a new environmental validation rules
-
-### Run the `make:envrule` command
-
-By default, the script will generate a class in `App/Env` namespace.
-
-#### Example:
-
-```
-php artisan make:envrule DatabaseEnvRules
-```
-
-`app/Env/DatabaseEnvRules.php`
-
-```php
-<?php
-
-namespace App\Env;
-
-use Lionix\EnvValidator;
-
-class DatabaseEnvRules extends EnvValidator
-{
-    /**
-     * Validation rules that apply to the .env variables.
-     *
-     * @return array
-     */
-    public function rules() : array
-    {
-        return [
-            //
-        ];
-    }
-}
-```
-
-### Specify validation rules:
-
-```php
-...
-public function rules() : array
-{
-    return [
-        'DB_CONNECTION' => 'requried|in:mysql,sqlite,pgsql,sqlsrv'
-        'DB_HOST' => 'requried',
-        'DB_PORT' => 'requried|numeric',
-        'DB_DATABASE' => 'requried',
-        'DB_USERNAME' => 'requried',
-        'DB_PASSWORD' => 'requried'
-    ];
-}
-...
-```
-
-### Apply the rules:
-
-You can add the `DatabaseEnvRules` class to `env.php` configuration file at the `rules` key. That way all the rules specified in the class will affect package artisan commands.
+This creates two files:
 
 `config/env.php`
 
 ```php
-
-<?php
-
 return [
-
-    /**
-     * Validation classes which contain environment rules
-     * applied by env artisan commands.
-     *
-     * Add your validation classes created by
-     * `php artisan make:envrule` command to apply their rules
-     *
-     * @var array
-     */
     'rules' => [
-        \App\Env\BaseEnvValidationRules::class
-        \App\Env\DatabaseEnvRules::class // <- our database rules
-    ]
+        \App\Env\BaseEnvValidationRules::class,
+    ],
 ];
 ```
 
-Or you can use `Lionix\EnvClient` Facade to validate the input with given validation rules:
+`app/Env/BaseEnvValidationRules.php`
 
 ```php
-...
-$client = app()->make(\Lionix\Envclient::class);
+namespace App\Env;
 
-$client->useValidator(new \App\Env\DatabaseEnvRules())->update($databaseCredentials);
+use Lionix\EnvClient\Services\EnvValidator;
 
-if ($client->errors()->isNotEmpty()) {
-    // handle errors
-} else {
-    // success, the variables are updated
+class BaseEnvValidationRules extends EnvValidator
+{
+    public function rules(): array
+    {
+        return [
+            //
+        ];
+    }
 }
-...
 ```
 
-## Facades
+### Add rules
 
-### Lionix\EnvClient
+Any [Laravel validation rule](https://laravel.com/docs/validation#available-validation-rules) can be used:
 
-#### Properties:
+```php
+public function rules(): array
+{
+    return [
+        'APP_ENV' => ['required', 'in:local,staging,production'],
+        'APP_DEBUG' => ['required', 'boolean'],
+        'DB_CONNECTION' => ['required', 'in:mysql,pgsql,sqlite,sqlsrv'],
+        'DB_PORT' => ['required_unless:DB_CONNECTION,sqlite', 'numeric'],
+    ];
+}
+```
 
-- protected **\$getter** : _Lionix\EnvClient\Interfaces\EnvGetterInterface_
+Every class listed in `config/env.php` is applied by `env:set` and `env:check`:
 
-- protected **\$setter** : _Lionix\EnvClient\Interfaces\EnvSetterInterface_
+```bash
+$ php artisan env:set DB_CONNECTION oracle
+   ERROR  The selected DB_CONNECTION is invalid.
 
-- protected **\$validator** : _Lionix\EnvClient\Interfaces\EnvValidatorInterface_
+$ php artisan env:check
+   ERROR  The selected DB_CONNECTION is invalid.
+```
 
-#### Methods:
+`env:set` validates the new value together with the rest of the file, so rules can reference other
+variables, but it only refuses the write when the variable being set is invalid.
 
-- `void` : **\_\_construct()**  
-  Create a new instance of EnvClient using default dependencies
+### Create more rule classes
 
-- `self` : **useGetter(_Lionix\EnvClient\Interfaces\EnvGetterInterface_ \$getter)**  
-  Set client getter dependency
+```bash
+php artisan make:envrule DatabaseEnvRules
+php artisan make:envrule Services/MailEnvRules   # app/Env/Services/MailEnvRules.php
+```
 
-- `self` : **useSetter(_Lionix\EnvClient\Interfaces\EnvSetterInterface_ \$setter)**  
-  Set setter dependency
+Then register them in `config/env.php`:
 
-- `self` : **useValidator(_Lionix\EnvClient\Interfaces\EnvValidatorInterface_ \$validator)**  
-  Set validator dependency merging current errors with the validator errors
+```php
+'rules' => [
+    \App\Env\BaseEnvValidationRules::class,
+    \App\Env\DatabaseEnvRules::class,
+],
+```
 
-- `array` : **all()**  
-  Get all env variables from the environmental file
+Rule classes are resolved through the service container, so constructor injection is supported.
+To customize the generated class, publish the stub with `php artisan vendor:publish --tag=envclient-stubs`.
 
-- `bool` : **has(_string \$key_)**  
-  Check if the environmental file contains the key
+## Using the client in code
 
-- `mixed` : **get(_string \$key_)**  
-  Get the env variable using the key (returns the output of `Illuminate\Support\Env` get method)
+Use the facade, or inject `Lionix\EnvClient\Interfaces\EnvClientInterface`:
 
-- `self` : **set(_array \$values_)**  
-  Set the environmental variables at runtime if validation rules passed
+```php
+use App\Env\DatabaseEnvRules;
+use Lionix\EnvClient\Facades\EnvClient;
 
-- `self` : **save()**  
-  Save previously set variables to the environmental file
+$client = EnvClient::useValidator(new DatabaseEnvRules())
+    ->update([
+        'DB_HOST' => '127.0.0.1',
+        'DB_DATABASE' => 'forge',
+    ]);
 
-- `self` : **update()**  
-  If validation rules passed then set and save variables to the environmental file
+if ($client->errors()->isNotEmpty()) {
+    // $client->errors() is an Illuminate\Support\MessageBag
+}
+```
 
-- `bool` : **validate(_array_ \$values)**  
-  Check values validness and retrieve passed status
+> Every static facade call resolves a fresh client, so chain the calls that should share a validator
+> and its errors (as above), or keep the returned instance.
 
-- `Illuminate\Support\MessageBag` : **errors()**  
-  Get all validation errors occurred during the class lifetime
+### Client methods
 
-### Lionix\EnvGetter
+| Method                                              | Description                                                                   |
+| --------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `all(): array`                                      | All variables declared in the `.env` file with their runtime values           |
+| `has(string $key): bool`                            | Whether the `.env` file declares the key                                      |
+| `get(string $key): mixed`                           | Runtime value of the variable (same casting as `env()`)                       |
+| `set(array $values): static`                        | Queue values to be saved if they pass validation                              |
+| `save(): static`                                    | Write the queued values to the `.env` file                                    |
+| `update(array $values): static`                     | `set()` and `save()` in one step                                              |
+| `validate(array $values): bool`                     | Validate values with the current validator                                    |
+| `errors(): MessageBag`                              | All validation errors collected during the client lifetime                    |
+| `useValidator(EnvValidatorInterface $v): static`    | Switch validator, keeping the errors collected so far                         |
+| `useGetter(EnvGetterInterface $g): static`          | Replace the reader                                                            |
+| `useSetter(EnvSetterInterface $s): static`          | Replace the writer                                                            |
 
-#### Methods:
+Values passed to `set()` / `update()` may be strings, numbers, booleans (`true`/`false`), `null` or
+`Stringable` objects. Invalid variable names and multi-line values throw an `InvalidArgumentException`.
 
-- `void` : **\_\_construct()**  
-  Create a new instance of EnvGetter
+> `get()` and `all()` return the values loaded when the application booted. Changes written to the file
+> are picked up on the next request or command.
 
-- `mixed` : **get(_string_ \$key)**  
-  Get the env variable using the key (returns the output of `Illuminate\Support\Env` get method)
+### Building blocks
 
-- `array` : **all()**  
-  Get all env variables from the environmental file
+The client is composed of three swappable services, bound in the container:
 
-- `bool` : **has(_string_ \$key)**  
-  Check if the environmental file contains the key
+| Interface                                               | Default implementation                         |
+| ------------------------------------------------------- | ---------------------------------------------- |
+| `Lionix\EnvClient\Interfaces\EnvGetterInterface`        | `Lionix\EnvClient\Services\EnvGetter`          |
+| `Lionix\EnvClient\Interfaces\EnvSetterInterface`        | `Lionix\EnvClient\Services\EnvSetter`          |
+| `Lionix\EnvClient\Interfaces\EnvValidatorInterface`     | `Lionix\EnvClient\Services\EnvValidator`       |
 
-### Lionix\EnvSetter
+Rebind any of them in your own service provider to change how the `.env` file is read, written or validated.
 
-#### Properties:
+## Upgrading from 1.x
 
-- protected **\$variablesToSet** : _array_
+1. Make sure your application runs on **PHP 8.2+** and **Laravel 12+**.
+2. If you implemented the package interfaces yourself, update the signatures:
+   - `EnvClientInterface` no longer declares a constructor, fluent methods return `static` and `get()` returns `mixed`.
+   - `EnvGetterInterface::get()` returns `mixed`.
+3. If you extended `EnvSetter`, `sanitize()` now accepts `mixed` and new `validateKey()` / `isQuoted()` helpers exist.
+4. Scripts relying on `env:set`, `env:get` or `env:check` always exiting with `0` must now handle a non-zero exit code on failure.
+5. Prefer the new `Lionix\EnvClient\Facades\EnvClient` facade and `Lionix\EnvClient\Services\*` classes; the
+   `Lionix\EnvClient`, `Lionix\EnvGetter`, `Lionix\EnvSetter` and `Lionix\EnvValidator` aliases are kept for backwards compatibility.
 
-#### Methods:
+See the [changelog](CHANGELOG.md) for the full list of changes.
 
-- `void` : **\_\_construct()**  
-  Create a new instance of EnvSetter
+## Testing
 
-- `void` : **set(_array_ \$values)**  
-  Merge given values with variablesToSet property
+```bash
+composer test
+```
 
-- `void` : **save()**  
-  Save all variables previously set by the set method to the environmental file
-
-- protected `string` : **sanitize(_string_ \$value)**  
-  Sanitize input values
-
-### Lionix\EnvValidator
-
-#### Properties:
-
-- protected **\$errors** : _Illuminate\Support\MessageBag_
-
-#### Methods:
-
-- `void` : **\_\_construct()**  
-  Create a new instance of EnvValidator
-
-- `array` : **rules()**  
-  Returns class validation rules
-
-- `bool` : **validate(_array_ \$values)**  
-  Validate given values
-
-- `Illuminate\Support\MessageBag` : **errors()**  
-  Get validator errors
-
-- `void` : **mergeErrors(_Illuminate\Support\MessageBag_ \$errors)**  
-  Merge given MessageBag with current errors
-
-## Credits:
+## Credits
 
 - [Stas Vartanyan](https://github.com/vaawebdev)
 - [Lionix Team](https://github.com/lionix-team)
+
+## License
+
+The MIT License (MIT). See [LICENSE.md](LICENSE.md).

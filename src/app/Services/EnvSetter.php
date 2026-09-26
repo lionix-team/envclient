@@ -1,78 +1,110 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Services;
 
+use InvalidArgumentException;
 use Lionix\EnvClient\Interfaces\EnvSetterInterface;
+use Stringable;
 
 class EnvSetter implements EnvSetterInterface
 {
     /**
-     * Variables that are to be merged with current
-     * env variables
+     * Sanitized variables waiting to be written to the environment file.
      *
-     * @var array
+     * @var array<string, string>
      */
-    protected $variablesToSet = [];
+    protected array $variablesToSet = [];
 
-    /**
-     * Set sanitized env values and merge them with $_ENV global
-     *
-     * @param array $values
-     *
-     * @return void
-     */
     public function set(array $values): void
     {
-        $this->variablesToSet = array_merge(
-            $this->variablesToSet,
-            array_map([$this, 'sanitize'], $values)
-        );
+        foreach ($values as $key => $value) {
+            $this->variablesToSet[$this->validateKey((string) $key)] = $this->sanitize($value);
+        }
     }
 
-    /**
-     * Save env values to the file
-     *
-     * @return void
-     */
     public function save(): void
     {
-        $filepath = app()->environmentFilePath();
-
-        $contents = file_get_contents($filepath);
-
-        foreach ($this->variablesToSet as $key => $value) {
-            if (!preg_match('/\b' . preg_quote($key) . '\b=/', $contents)) {
-                $contents .= PHP_EOL . '$key=$value';
-            } else {
-                $contents = preg_replace(
-                    '/^' . preg_quote($key) . '=[^\r\n]*/m',
-                    $key . '=' . $value,
-                    $contents
-                );
-            }
+        if ($this->variablesToSet === []) {
+            return;
         }
 
-        file_put_contents($filepath, $contents);
+        $path = app()->environmentFilePath();
+
+        $contents = is_file($path) ? (string) file_get_contents($path) : '';
+
+        foreach ($this->variablesToSet as $key => $value) {
+            $pattern = '/^([ \t]*(?:export[ \t]+)?)'.preg_quote($key, '/').'[ \t]*=[^\r\n]*/m';
+
+            if (preg_match($pattern, $contents) === 1) {
+                $contents = (string) preg_replace_callback(
+                    $pattern,
+                    static fn (array $matches): string => $matches[1].$key.'='.$value,
+                    $contents,
+                );
+
+                continue;
+            }
+
+            if ($contents !== '' && ! str_ends_with($contents, "\n")) {
+                $contents .= PHP_EOL;
+            }
+
+            $contents .= $key.'='.$value.PHP_EOL;
+        }
+
+        file_put_contents($path, $contents, LOCK_EX);
 
         $this->variablesToSet = [];
     }
 
     /**
-     * Sanitize given value
+     * Ensure the key is a valid environment variable name.
      *
-     * @param string $value
-     *
-     * @return string
+     * @throws InvalidArgumentException
      */
-    protected function sanitize(string $value): string
+    protected function validateKey(string $key): string
     {
-        $toReturn = $value;
-        if (is_string($value)) {
-            $toReturn = trim($toReturn);
-            if (preg_match('/\s/', $toReturn)) {
-                $toReturn = '"' . $toReturn . '"';
-            }
+        if (preg_match('/^[A-Za-z_][A-Za-z0-9_.]*$/', $key) !== 1) {
+            throw new InvalidArgumentException("Invalid environment variable name [{$key}].");
         }
-        return $toReturn;
+
+        return $key;
+    }
+
+    /**
+     * Convert the given value into a string safe to be written to the environment file.
+     */
+    protected function sanitize(mixed $value): string
+    {
+        $value = match (true) {
+            $value === null => 'null',
+            is_bool($value) => $value ? 'true' : 'false',
+            is_scalar($value), $value instanceof Stringable => trim((string) $value),
+            default => throw new InvalidArgumentException(
+                'Environment values must be scalar, null or Stringable, ['.get_debug_type($value).'] given.'
+            ),
+        };
+
+        if (preg_match('/[\r\n]/', $value) === 1) {
+            throw new InvalidArgumentException('Environment values must not contain line breaks.');
+        }
+
+        if ($this->isQuoted($value) || preg_match('/[\s#"\'\\\\]/', $value) !== 1) {
+            return $value;
+        }
+
+        return '"'.addcslashes($value, '"\\').'"';
+    }
+
+    /**
+     * Determine if the value is already wrapped in matching quotes.
+     */
+    protected function isQuoted(string $value): bool
+    {
+        return strlen($value) > 1
+            && in_array($value[0], ['"', "'"], true)
+            && str_ends_with($value, $value[0]);
     }
 }

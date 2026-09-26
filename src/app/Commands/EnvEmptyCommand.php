@@ -1,54 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
 use Lionix\EnvClient\Interfaces\EnvClientInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand(name: 'env:empty')]
 class EnvEmptyCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'env:empty';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Print empty .env variables';
+    protected $description = 'List the environment variables that have no value';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function handle(EnvClientInterface $client): int
     {
-        parent::__construct();
-    }
+        $empty = array_keys(array_filter($client->all(), static fn (mixed $value): bool => $value === ''));
 
-    /**
-     * Print .env empty variables
-     *
-     * @return void
-     */
-    public function handle(EnvClientInterface $client)
-    {
-        $noEmptyValues = true;
+        if ($empty === []) {
+            $this->components->info('All environment variables are set.');
 
-        foreach ($client->all() as $key => $value) {
-            if ($value == '') {
-                $noEmptyValues = false;
-                $this->warn($key . ' variable is empty!');
-            }
+            return self::SUCCESS;
         }
 
-        if ($noEmptyValues) {
-            $this->info('All .env variables are set!');
+        foreach ($empty as $key) {
+            $this->components->warn("{$key} is empty.");
         }
+
+        return self::SUCCESS;
     }
 }

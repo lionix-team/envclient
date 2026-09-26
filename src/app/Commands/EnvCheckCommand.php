@@ -1,62 +1,50 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Container\Container;
+use Lionix\EnvClient\Concerns\ResolvesEnvValidators;
 use Lionix\EnvClient\Interfaces\EnvClientInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand(name: 'env:check')]
 class EnvCheckCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
+    use ResolvesEnvValidators;
+
     protected $signature = 'env:check';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Apply .env global validation rules';
+    protected $description = 'Validate the environment file against the configured rules';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function handle(Container $container, EnvClientInterface $client): int
     {
-        parent::__construct();
-    }
+        $validators = $this->envValidators($container);
 
-    /**
-     * Checking all .env variables with defined
-     * validators in env.php configuration file at validators key
-     * and print the results
-     *
-     * @return void
-     */
-    public function handle(Application $app, EnvClientInterface $client)
-    {
-        $validators = config('env.rules', []);
-        if (count($validators)) {
-            foreach ($validators as $classname) {
-                $client
-                    ->useValidator($app->make($classname))
-                    ->validate($client->all());
-            }
-            if ($client->errors()->isEmpty()) {
-                $this->info('All .env variables are valid!');
-            } else {
-                foreach ($client->errors()->all() as $err) {
-                    $this->error($err);
-                }
-            }
-        } else {
-            $this->error('No global validation rules provided!');
+        if ($validators === []) {
+            $this->components->warn('No environment validation rules configured.');
+
+            return self::SUCCESS;
         }
+
+        $values = $client->all();
+
+        foreach ($validators as $validator) {
+            $client->useValidator($validator)->validate($values);
+        }
+
+        if ($client->errors()->isEmpty()) {
+            $this->components->info('All environment variables are valid.');
+
+            return self::SUCCESS;
+        }
+
+        foreach ($client->errors()->all() as $error) {
+            $this->components->error($error);
+        }
+
+        return self::FAILURE;
     }
 }

@@ -1,22 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Interfaces;
 
 interface EnvSetterInterface
 {
     /**
-     * Set variables
+     * Queue variables to be written to the environment file.
      *
-     * @param array $toSet
-     *
-     * @return void
+     * @param  array<string, scalar|\Stringable|null>  $values
      */
-    public function set(array $toSet): void;
+    public function set(array $values): void;
 
     /**
-     * Apply changes by saving them
-     *
-     * @return void
+     * Write the queued variables to the environment file.
      */
     public function save(): void;
 }

@@ -1,78 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\GeneratorCommand;
-use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Input\InputOption;
 
+#[AsCommand(name: 'make:envrule')]
 class MakeEnvRuleCommand extends GeneratorCommand
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'make:envrule {name}';
+    protected $name = 'make:envrule';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create a new .env validation rules';
+    protected $description = 'Create a new environment validation rules class';
 
-    /**
-     * The type of class being generated.
-     *
-     * @var string
-     */
-    protected $type = 'Environment Rule';
+    protected $type = 'Environment rule';
 
-    /**
-     * Replace the class name for the given stub.
-     *
-     * @param  string  $stub
-     * @param  string  $name
-     *
-     * @return string
-     */
-    protected function replaceClass($stub, $name)
+    protected function getStub(): string
     {
-        $stub = parent::replaceClass($stub, $name);
-        return str_replace('BaseEnvValidationRules', $this->argument('name'), $stub);
+        $published = $this->laravel->basePath('stubs/envrule.stub');
+
+        return is_file($published) ? $published : dirname(__DIR__, 2).'/stubs/envrule.stub';
     }
 
-    /**
-     * Get the stub file for the generator.
-     *
-     * @return string
-     */
-    protected function getStub()
+    protected function getDefaultNamespace($rootNamespace): string
     {
-        return dirname(__DIR__, 2) . '/stubs/BaseEnvValidationRules.stub';
+        return $rootNamespace.'\\Env';
     }
 
-    /**
-     * Get the default namespace for the class.
-     *
-     * @param  string  $rootNamespace
-     *
-     * @return string
-     */
-    protected function getDefaultNamespace($rootNamespace)
-    {
-        return $rootNamespace . '\Env';
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments()
+    protected function getOptions(): array
     {
         return [
-            ['name', InputArgument::REQUIRED, 'The name of the .env rule.'],
+            ['force', 'f', InputOption::VALUE_NONE, 'Create the class even if it already exists'],
         ];
     }
 }

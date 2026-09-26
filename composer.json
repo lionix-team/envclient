@@ -1,22 +1,36 @@
 {
     "name": "lionix/envclient",
-    "description": "Laravel environment client and console commands.",
+    "description": "Manage and validate Laravel environment variables with artisan commands, validation rules and a fluent client.",
     "keywords": [
         "laravel",
         "env",
         "dotenv",
         "environment",
         "validation",
+        "artisan",
         "lionix"
     ],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Lionix Team",
+            "email": "packages@lionix-team.com"
+        },
+        {
+            "name": "Anastas Vartanyan",
+            "email": "vaawebdev@gmail.com"
+        }
+    ],
     "require": {
-        "php": "^7.2.5|^8.0",
-        "laravel/framework": ">=6.20.12"
+        "php": "^8.2",
+        "illuminate/console": "^12.0 || ^13.0",
+        "illuminate/contracts": "^12.0 || ^13.0",
+        "illuminate/support": "^12.0 || ^13.0",
+        "illuminate/validation": "^12.0 || ^13.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.3.3",
-        "orchestra/testbench": "^4.8"
+        "orchestra/testbench": "^10.0 || ^11.0",
+        "phpunit/phpunit": "^11.5.3 || ^12.0 || ^13.0"
     },
     "autoload": {
         "psr-4": {
@@ -27,6 +41,9 @@
         "psr-4": {
             "Lionix\\EnvClient\\Tests\\": "tests"
         }
+    },
+    "scripts": {
+        "test": "phpunit"
     },
     "extra": {
         "laravel": {
@@ -41,15 +58,9 @@
             }
         }
     },
-    "authors": [
-        {
-            "name": "Lionix Team",
-            "email": "packages@lionix-team.com"
-        },
-        {
-            "name": "Anastas Vartanyan",
-            "email": "vaawebdev@gmail.com"
-        }
-    ],
-    "minimum-stability": "dev"
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
