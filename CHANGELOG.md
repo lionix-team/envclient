@@ -2,6 +2,21 @@
 
 All notable changes to `lionix/envclient` are documented in this file.
 
+## [2.1.0] - 2026-09-26
+
+### Added
+
+- `env:generate` command that fills in environment variables provided by generator classes, e.g. on deployment ([#5](https://github.com/lionix-team/envclient/issues/5)).
+  - Writes only missing or empty variables by default; `--force` overwrites existing values and `--dry-run` shows what would change.
+  - Closure values are resolved lazily through the container, so secrets are generated only when needed.
+  - Generated values are validated against `env.rules`; nothing is written if any of them is invalid.
+- `make:envgenerator` command, `Lionix\EnvClient\Services\EnvGenerator` base class and `EnvGeneratorInterface`.
+- `generators` key in `config/env.php`.
+
+### Changed
+
+- `vlucas/phpdotenv` is now a direct dependency (it was only pulled in through `laravel/framework`).
+
 ## [2.0.0] - 2026-09-26
 
 A modernization release targeting current PHP and Laravel versions. See the
@@ -58,5 +73,6 @@ A modernization release targeting current PHP and Laravel versions. See the
 
 - PHP 8 support, Laravel 5.8+ support and the initial release.
 
+[2.1.0]: https://github.com/lionix-team/envclient/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/lionix-team/envclient/compare/1.1.3...2.0.0
 [1.1.3]: https://github.com/lionix-team/envclient/releases/tag/1.1.3

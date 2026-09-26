@@ -19,20 +19,35 @@ trait ResolvesEnvValidators
      */
     protected function envValidators(Container $container): array
     {
-        $validators = [];
+        return $this->resolveConfiguredClasses($container, 'env.rules', EnvValidatorInterface::class);
+    }
 
-        foreach ((array) config('env.rules', []) as $class) {
-            $validator = $container->make($class);
+    /**
+     * Resolve the classes listed under the given configuration key.
+     *
+     * @template T of object
+     *
+     * @param  class-string<T>  $interface
+     * @return list<T>
+     *
+     * @throws UnexpectedValueException
+     */
+    protected function resolveConfiguredClasses(Container $container, string $key, string $interface): array
+    {
+        $instances = [];
 
-            if (! $validator instanceof EnvValidatorInterface) {
+        foreach ((array) config($key, []) as $class) {
+            $instance = $container->make($class);
+
+            if (! $instance instanceof $interface) {
                 throw new UnexpectedValueException(sprintf(
-                    'Environment rule [%s] must implement [%s].', $class, EnvValidatorInterface::class
+                    'Class [%s] listed in [%s] must implement [%s].', $class, $key, $interface
                 ));
             }
 
-            $validators[] = $validator;
+            $instances[] = $instance;
         }
 
-        return $validators;
+        return $instances;
     }
 }

@@ -7,8 +7,10 @@ namespace Lionix\EnvClient\Providers;
 use Illuminate\Support\ServiceProvider;
 use Lionix\EnvClient\Commands\EnvCheckCommand;
 use Lionix\EnvClient\Commands\EnvEmptyCommand;
+use Lionix\EnvClient\Commands\EnvGenerateCommand;
 use Lionix\EnvClient\Commands\EnvGetCommand;
 use Lionix\EnvClient\Commands\EnvSetCommand;
+use Lionix\EnvClient\Commands\MakeEnvGeneratorCommand;
 use Lionix\EnvClient\Commands\MakeEnvRuleCommand;
 use Lionix\EnvClient\Interfaces\EnvClientInterface;
 use Lionix\EnvClient\Interfaces\EnvGetterInterface;
@@ -48,13 +50,16 @@ class EnvClientServiceProvider extends ServiceProvider
 
         $this->publishes([
             $root.'/stubs/envrule.stub' => base_path('stubs/envrule.stub'),
+            $root.'/stubs/envgenerator.stub' => base_path('stubs/envgenerator.stub'),
         ], ['envclient-stubs', 'stubs']);
 
         $this->commands([
             EnvCheckCommand::class,
             EnvEmptyCommand::class,
+            EnvGenerateCommand::class,
             EnvGetCommand::class,
             EnvSetCommand::class,
+            MakeEnvGeneratorCommand::class,
             MakeEnvRuleCommand::class,
         ]);
     }
