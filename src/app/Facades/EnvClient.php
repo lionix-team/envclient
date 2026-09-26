@@ -19,6 +19,7 @@ use Lionix\EnvClient\Interfaces\EnvClientInterface;
  * @method static mixed get(string $key)
  * @method static \Lionix\EnvClient\Interfaces\EnvClientInterface set(array<string, scalar|\Stringable|null> $values)
  * @method static \Lionix\EnvClient\Interfaces\EnvClientInterface update(array<string, scalar|\Stringable|null> $values)
+ * @method static \Lionix\EnvClient\Services\EnvClient forget(list<string> $keys)
  * @method static bool validate(array<string, mixed> $values)
  *
  * @see \Lionix\EnvClient\Services\EnvClient

@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Lionix\EnvClient\Services;
 
 use InvalidArgumentException;
-use Lionix\EnvClient\Interfaces\EnvSetterInterface;
+use Lionix\EnvClient\Events\EnvironmentFileUpdated;
+use Lionix\EnvClient\Interfaces\EnvForgetterInterface;
+use Lionix\EnvClient\Support\EnvironmentFile;
 use Stringable;
 
-class EnvSetter implements EnvSetterInterface
+class EnvSetter implements EnvForgetterInterface
 {
     /**
      * Sanitized variables waiting to be written to the environment file.
@@ -17,25 +19,47 @@ class EnvSetter implements EnvSetterInterface
      */
     protected array $variablesToSet = [];
 
+    /**
+     * Variables waiting to be removed from the environment file.
+     *
+     * @var array<string, true>
+     */
+    protected array $variablesToForget = [];
+
     public function set(array $values): void
     {
         foreach ($values as $key => $value) {
-            $this->variablesToSet[$this->validateKey((string) $key)] = $this->sanitize($value);
+            $key = $this->validateKey((string) $key);
+
+            $this->variablesToSet[$key] = $this->sanitize($value);
+
+            unset($this->variablesToForget[$key]);
+        }
+    }
+
+    public function forget(array $keys): void
+    {
+        foreach ($keys as $key) {
+            $key = $this->validateKey((string) $key);
+
+            $this->variablesToForget[$key] = true;
+
+            unset($this->variablesToSet[$key]);
         }
     }
 
     public function save(): void
     {
-        if ($this->variablesToSet === []) {
+        if ($this->variablesToSet === [] && $this->variablesToForget === []) {
             return;
         }
 
-        $path = app()->environmentFilePath();
-
-        $contents = is_file($path) ? (string) file_get_contents($path) : '';
+        $path = EnvironmentFile::path();
+        $original = EnvironmentFile::read($path);
+        $contents = $original;
 
         foreach ($this->variablesToSet as $key => $value) {
-            $pattern = '/^([ \t]*(?:export[ \t]+)?)'.preg_quote($key, '/').'[ \t]*=[^\r\n]*/m';
+            $pattern = EnvironmentFile::keyPattern($key);
 
             if (preg_match($pattern, $contents) === 1) {
                 $contents = (string) preg_replace_callback(
@@ -54,9 +78,70 @@ class EnvSetter implements EnvSetterInterface
             $contents .= $key.'='.$value.PHP_EOL;
         }
 
-        file_put_contents($path, $contents, LOCK_EX);
+        foreach (array_keys($this->variablesToForget) as $key) {
+            $contents = (string) preg_replace(
+                '/^[ \t]*(?:export[ \t]+)?'.preg_quote($key, '/').'[ \t]*=[^\r\n]*(?:\r\n|\r|\n|$)/m',
+                '',
+                $contents,
+            );
+        }
+
+        $set = $this->variablesToSet;
+        $forgotten = array_keys($this->variablesToForget);
 
         $this->variablesToSet = [];
+        $this->variablesToForget = [];
+
+        if ($contents === $original && is_file($path)) {
+            return;
+        }
+
+        $this->backup($path);
+
+        file_put_contents($path, $contents, LOCK_EX);
+
+        if (EnvironmentFile::isLoaded($path)) {
+            $this->refreshRuntime($set, $forgotten);
+        }
+
+        if (app()->bound('events')) {
+            app('events')->dispatch(new EnvironmentFileUpdated($path, $set, $forgotten));
+        }
+    }
+
+    /**
+     * Copy the current file to `<file>.backup` when backups are enabled.
+     */
+    protected function backup(string $path): void
+    {
+        if (config('env.backup', false) && is_file($path)) {
+            copy($path, $path.'.backup');
+        }
+    }
+
+    /**
+     * Update the runtime environment so `env()` reflects the saved values.
+     *
+     * Configuration values that were already resolved from the environment are not affected.
+     *
+     * @param  array<string, string>  $set
+     * @param  list<string>  $forgotten
+     */
+    protected function refreshRuntime(array $set, array $forgotten): void
+    {
+        foreach ($set as $key => $value) {
+            $value = EnvironmentFile::parse($key.'='.$value)[$key] ?? '';
+
+            $_ENV[$key] = $_SERVER[$key] = $value;
+
+            putenv($key.'='.$value);
+        }
+
+        foreach ($forgotten as $key) {
+            unset($_ENV[$key], $_SERVER[$key]);
+
+            putenv($key);
+        }
     }
 
     /**

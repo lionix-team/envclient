@@ -2,6 +2,35 @@
 
 All notable changes to `lionix/envclient` are documented in this file.
 
+## [2.2.0] - 2026-09-26
+
+### Added
+
+- `env:diff` and `env:sync` commands to compare and synchronise the environment file with `.env.example`.
+- `env:unset` command and `EnvClient::forget()` to remove variables (`EnvForgetterInterface`, implemented by `EnvSetter`).
+- `env:restore` command and the `backup` option, which copies the file to `<file>.backup` before every change.
+- `--file` option on all `env:*` commands to work on another environment file.
+- `--encrypted`, `--key` and `--cipher` options to read and update files encrypted with Laravel's `env:encrypt`
+  without writing the decrypted contents next to the application.
+- Secret values (`hidden` patterns in `config/env.php`) are masked in `env:get` and `env:generate` output; `--reveal` prints them.
+- `validate_on_boot` option (`log` or `exception`) to validate the environment on every web request, with the new
+  `InvalidEnvironmentException`.
+- Ready-made rule sets: `AppRules`, `DatabaseRules`, `MailRules`, `QueueRules`, `RedisRules` and `AwsRules`.
+- `EnvironmentFileUpdated` and `EnvironmentVariablesGenerated` events.
+- `env:generate` lists the values it writes (masked) next to each variable.
+- PHPStan (Larastan, level 8) and Laravel Pint checks in CI, Dependabot for GitHub Actions and `.gitattributes`
+  to keep tests out of distributed archives.
+
+### Changed
+
+- **`env:get` masks secret values by default.** Scripts reading secrets with `env:get` must pass `--reveal`.
+- Saving the file updates the runtime environment, so `env()` returns the new value for the rest of the request
+  or command.
+- When the configuration is cached (and `.env` is therefore not loaded) or another file is targeted, values are
+  read from the file itself instead of the runtime environment.
+- The file is not rewritten when a save would not change it.
+- `illuminate/encryption` is now a direct dependency.
+
 ## [2.1.0] - 2026-09-26
 
 ### Added
@@ -73,6 +102,7 @@ A modernization release targeting current PHP and Laravel versions. See the
 
 - PHP 8 support, Laravel 5.8+ support and the initial release.
 
+[2.2.0]: https://github.com/lionix-team/envclient/compare/2.1.0...2.2.0
 [2.1.0]: https://github.com/lionix-team/envclient/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/lionix-team/envclient/compare/1.1.3...2.0.0
 [1.1.3]: https://github.com/lionix-team/envclient/releases/tag/1.1.3

@@ -6,6 +6,7 @@ namespace Lionix\EnvClient\Tests\Services;
 
 use Lionix\EnvClient\Facades\EnvClient as EnvClientFacade;
 use Lionix\EnvClient\Interfaces\EnvClientInterface;
+use Lionix\EnvClient\Interfaces\EnvSetterInterface;
 use Lionix\EnvClient\Services\EnvClient;
 use Lionix\EnvClient\Services\EnvGetter;
 use Lionix\EnvClient\Services\EnvSetter;
@@ -25,9 +26,9 @@ class EnvClientTest extends TestCase
     {
         $client = $this->app->make(EnvClient::class);
 
-        $getter = new EnvGetter();
-        $setter = new EnvSetter();
-        $validator = new ValidatorWithRules();
+        $getter = new EnvGetter;
+        $setter = new EnvSetter;
+        $validator = new ValidatorWithRules;
 
         $this->assertSame($client, $client->useGetter($getter)->useSetter($setter)->useValidator($validator));
 
@@ -40,8 +41,8 @@ class EnvClientTest extends TestCase
     {
         $client = $this->app->make(EnvClient::class);
 
-        $client->useValidator(new ValidatorWithRules())->validate(['APP_NAME' => 'x']);
-        $client->useValidator(new ValidatorWithRules());
+        $client->useValidator(new ValidatorWithRules)->validate(['APP_NAME' => 'x']);
+        $client->useValidator(new ValidatorWithRules);
 
         $this->assertTrue($client->errors()->has('APP_NAME'));
         $this->assertTrue($client->errors()->has('BOOLEAN_VALUE'));
@@ -49,7 +50,7 @@ class EnvClientTest extends TestCase
 
     public function test_update_saves_valid_values(): void
     {
-        $client = $this->app->make(EnvClient::class)->useValidator(new ValidatorWithRules());
+        $client = $this->app->make(EnvClient::class)->useValidator(new ValidatorWithRules);
 
         $client->update(['APP_NAME' => 'Updated', 'BOOLEAN_VALUE' => '1']);
 
@@ -61,7 +62,7 @@ class EnvClientTest extends TestCase
     {
         $original = $this->envContents();
 
-        $client = $this->app->make(EnvClient::class)->useValidator(new ValidatorWithRules());
+        $client = $this->app->make(EnvClient::class)->useValidator(new ValidatorWithRules);
 
         $client->update(['APP_NAME' => 'x', 'BOOLEAN_VALUE' => '1']);
 
@@ -83,9 +84,33 @@ class EnvClientTest extends TestCase
         $this->assertTrue(EnvClientFacade::has('APP_NAME'));
         $this->assertSame('lionix/envclient', EnvClientFacade::get('APP_NAME'));
 
-        $client = EnvClientFacade::useValidator(new ValidatorWithRules())->update(['APP_NAME' => 'x']);
+        $client = EnvClientFacade::useValidator(new ValidatorWithRules)->update(['APP_NAME' => 'x']);
 
         $this->assertTrue($client->errors()->has('APP_NAME'));
         $this->assertTrue(EnvClientFacade::errors()->isEmpty(), 'Facade calls must not share state.');
+    }
+
+    public function test_forget(): void
+    {
+        $client = $this->app->make(EnvClient::class);
+
+        $client->forget(['APP_NAME']);
+
+        $this->assertFalse($client->has('APP_NAME'));
+        $this->assertStringNotContainsString('APP_NAME=', $this->envContents());
+    }
+
+    public function test_forget_requires_a_forgetter(): void
+    {
+        $client = $this->app->make(EnvClient::class)->useSetter(new class implements EnvSetterInterface
+        {
+            public function set(array $values): void {}
+
+            public function save(): void {}
+        });
+
+        $this->expectException(\LogicException::class);
+
+        $client->forget(['APP_NAME']);
     }
 }

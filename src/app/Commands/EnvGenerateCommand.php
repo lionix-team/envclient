@@ -5,25 +5,30 @@ declare(strict_types=1);
 namespace Lionix\EnvClient\Commands;
 
 use Closure;
-use Dotenv\Dotenv;
-use Dotenv\Exception\ExceptionInterface as DotenvException;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Container\Container;
 use InvalidArgumentException;
+use Lionix\EnvClient\Concerns\InteractsWithEnvironmentFile;
+use Lionix\EnvClient\Concerns\MasksSecrets;
 use Lionix\EnvClient\Concerns\ResolvesEnvValidators;
+use Lionix\EnvClient\Events\EnvironmentVariablesGenerated;
 use Lionix\EnvClient\Interfaces\EnvClientInterface;
 use Lionix\EnvClient\Interfaces\EnvGeneratorInterface;
 use Lionix\EnvClient\Interfaces\EnvSetterInterface;
+use Lionix\EnvClient\Support\EnvironmentFile;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'env:generate')]
 class EnvGenerateCommand extends Command
 {
+    use InteractsWithEnvironmentFile;
+    use MasksSecrets;
     use ResolvesEnvValidators;
 
     protected $signature = 'env:generate
         {--force : Overwrite variables that already have a value}
-        {--dry-run : List the variables that would be written without changing the file}';
+        {--dry-run : List the variables that would be written without changing the file}
+        {--reveal : Print secret values instead of masking them}'.self::FILE_OPTIONS;
 
     protected $description = 'Fill in environment variables provided by the configured generators';
 
@@ -37,8 +42,24 @@ class EnvGenerateCommand extends Command
             return self::SUCCESS;
         }
 
+        return $this->withEnvironmentFile(
+            fn (): int => $this->generate($container, $client, $setter, $generators),
+            writes: true,
+            mustExist: false,
+        );
+    }
+
+    /**
+     * @param  list<EnvGeneratorInterface>  $generators
+     */
+    protected function generate(
+        Container $container,
+        EnvClientInterface $client,
+        EnvSetterInterface $setter,
+        array $generators,
+    ): int {
         $current = $client->all();
-        $file = $this->fileValues();
+        $file = EnvironmentFile::parse(EnvironmentFile::read());
         $pending = [];
 
         foreach ($generators as $generator) {
@@ -64,10 +85,8 @@ class EnvGenerateCommand extends Command
             $pending,
         );
 
-        $values = array_merge($current, $pending);
-
         foreach ($this->envValidators($container) as $validator) {
-            $client->useValidator($validator)->validate($values);
+            $client->useValidator($validator)->validate(array_merge($current, $pending));
         }
 
         $errors = array_intersect_key($client->errors()->toArray(), $pending);
@@ -82,9 +101,9 @@ class EnvGenerateCommand extends Command
             return self::FAILURE;
         }
 
-        foreach (array_keys($pending) as $key) {
+        foreach ($pending as $key => $value) {
             $this->components->twoColumnDetail(
-                $key,
+                $key.' <fg=gray>'.$this->displayValue($key, $value, (bool) $this->option('reveal')).'</>',
                 array_key_exists($key, $file) ? '<fg=yellow>overwrite</>' : '<fg=green>add</>',
             );
         }
@@ -104,6 +123,10 @@ class EnvGenerateCommand extends Command
             return self::FAILURE;
         }
 
+        $this->laravel->make('events')->dispatch(
+            new EnvironmentVariablesGenerated(EnvironmentFile::path(), array_keys($pending))
+        );
+
         $this->components->info(count($pending).' environment variable(s) generated.');
 
         return self::SUCCESS;
@@ -119,21 +142,5 @@ class EnvGenerateCommand extends Command
     {
         return ! in_array($client->get($key), [null, ''], true)
             || ! in_array($file[$key] ?? null, [null, ''], true);
-    }
-
-    /**
-     * Get the raw values declared in the environment file.
-     *
-     * @return array<string, string|null>
-     */
-    protected function fileValues(): array
-    {
-        $path = $this->laravel->environmentFilePath();
-
-        try {
-            return is_file($path) ? Dotenv::parse((string) file_get_contents($path)) : [];
-        } catch (DotenvException) {
-            return [];
-        }
     }
 }

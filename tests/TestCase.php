@@ -6,11 +6,24 @@ namespace Lionix\EnvClient\Tests;
 
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Lionix\EnvClient\Providers\EnvClientServiceProvider;
+use Lionix\EnvClient\Support\EnvironmentFile;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
     protected string $envDirectory;
+
+    /**
+     * @var array{0: array<string, mixed>, 1: array<string, mixed>, 2: array<string, string>}
+     */
+    protected array $processEnvironment;
+
+    protected function setUp(): void
+    {
+        $this->processEnvironment = [$_ENV, $_SERVER, getenv()];
+
+        parent::setUp();
+    }
 
     protected function getPackageProviders($app): array
     {
@@ -31,6 +44,9 @@ abstract class TestCase extends BaseTestCase
 
         $app->bootstrapWith([LoadEnvironmentVariables::class]);
 
+        // Testbench registers package providers before this runs.
+        $app->instance(EnvironmentFile::BOOTED_PATH, $app->environmentFilePath());
+
         $app['config']->set('env.rules', []);
     }
 
@@ -38,8 +54,21 @@ abstract class TestCase extends BaseTestCase
     {
         parent::tearDown();
 
-        @unlink($this->envDirectory.'/.env');
+        foreach (glob($this->envDirectory.'/{,.}[!.,!..]*', GLOB_BRACE) ?: [] as $file) {
+            @unlink($file);
+        }
+
         @rmdir($this->envDirectory);
+
+        [$_ENV, $_SERVER, $variables] = $this->processEnvironment;
+
+        foreach (array_diff_key(getenv(), $variables) as $key => $value) {
+            putenv((string) $key);
+        }
+
+        foreach ($variables as $key => $value) {
+            putenv($key.'='.$value);
+        }
     }
 
     protected function envContents(): string

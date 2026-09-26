@@ -6,6 +6,7 @@ namespace Lionix\EnvClient\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Container\Container;
+use Lionix\EnvClient\Concerns\InteractsWithEnvironmentFile;
 use Lionix\EnvClient\Concerns\ResolvesEnvValidators;
 use Lionix\EnvClient\Interfaces\EnvClientInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -13,38 +14,41 @@ use Symfony\Component\Console\Attribute\AsCommand;
 #[AsCommand(name: 'env:check')]
 class EnvCheckCommand extends Command
 {
+    use InteractsWithEnvironmentFile;
     use ResolvesEnvValidators;
 
-    protected $signature = 'env:check';
+    protected $signature = 'env:check'.self::FILE_OPTIONS;
 
     protected $description = 'Validate the environment file against the configured rules';
 
     public function handle(Container $container, EnvClientInterface $client): int
     {
-        $validators = $this->envValidators($container);
+        return $this->withEnvironmentFile(function () use ($container, $client): int {
+            $validators = $this->envValidators($container);
 
-        if ($validators === []) {
-            $this->components->warn('No environment validation rules configured.');
+            if ($validators === []) {
+                $this->components->warn('No environment validation rules configured.');
 
-            return self::SUCCESS;
-        }
+                return self::SUCCESS;
+            }
 
-        $values = $client->all();
+            $values = $client->all();
 
-        foreach ($validators as $validator) {
-            $client->useValidator($validator)->validate($values);
-        }
+            foreach ($validators as $validator) {
+                $client->useValidator($validator)->validate($values);
+            }
 
-        if ($client->errors()->isEmpty()) {
-            $this->components->info('All environment variables are valid.');
+            if ($client->errors()->isEmpty()) {
+                $this->components->info('All environment variables are valid.');
 
-            return self::SUCCESS;
-        }
+                return self::SUCCESS;
+            }
 
-        foreach ($client->errors()->all() as $error) {
-            $this->components->error($error);
-        }
+            foreach ($client->errors()->all() as $error) {
+                $this->components->error($error);
+            }
 
-        return self::FAILURE;
+            return self::FAILURE;
+        });
     }
 }

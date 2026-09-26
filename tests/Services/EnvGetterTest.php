@@ -11,7 +11,7 @@ class EnvGetterTest extends TestCase
 {
     public function test_all_returns_every_declared_variable(): void
     {
-        $all = (new EnvGetter())->all();
+        $all = (new EnvGetter)->all();
 
         $this->assertSame([
             'APP_NAME', 'BOOLEAN_VALUE', 'BOOLEAN_VALUE_TRUE', 'NUMERIC_VALUE', 'EMPTY_VALUE',
@@ -25,7 +25,7 @@ class EnvGetterTest extends TestCase
 
     public function test_get_casts_values_like_the_env_helper(): void
     {
-        $getter = new EnvGetter();
+        $getter = new EnvGetter;
 
         $this->assertSame('lionix/envclient', $getter->get('APP_NAME'));
         $this->assertFalse($getter->get('BOOLEAN_VALUE'));
@@ -36,7 +36,7 @@ class EnvGetterTest extends TestCase
 
     public function test_has(): void
     {
-        $getter = new EnvGetter();
+        $getter = new EnvGetter;
 
         $this->assertTrue($getter->has('APP_NAME'));
         $this->assertTrue($getter->has('EMPTY_VALUE'));
@@ -48,7 +48,7 @@ class EnvGetterTest extends TestCase
     {
         $this->writeEnv("# COMMENTED=1\nexport EXPORTED=yes\n  INDENTED=1\n");
 
-        $getter = new EnvGetter();
+        $getter = new EnvGetter;
 
         $this->assertSame(['EXPORTED', 'INDENTED'], array_keys($getter->all()));
         $this->assertFalse($getter->has('COMMENTED'));
@@ -59,7 +59,7 @@ class EnvGetterTest extends TestCase
     {
         unlink($this->envDirectory.'/.env');
 
-        $getter = new EnvGetter();
+        $getter = new EnvGetter;
 
         $this->assertSame([], $getter->all());
         $this->assertFalse($getter->has('APP_NAME'));
